@@ -9,24 +9,23 @@ internal interface ITelegramMessageHandler
 
 internal sealed record HandleTelegramMessageResult(
     HandleTelegramMessageCode Code, 
-    string? Result, 
-    string? Error )
+    string? Response)
 {
-    public bool HasResult => !string.IsNullOrWhiteSpace(Result);
+    public bool HasResponse => !string.IsNullOrWhiteSpace(Response);
     
     public static HandleTelegramMessageResult UnknownCommand()
     {
-        return new HandleTelegramMessageResult(HandleTelegramMessageCode.UnknownCommand, null, null);
+        return new HandleTelegramMessageResult(HandleTelegramMessageCode.UnknownCommand, null);
     }
     
-    public static HandleTelegramMessageResult Success(string result)
+    public static HandleTelegramMessageResult Success(string response)
     {
-        return new HandleTelegramMessageResult(HandleTelegramMessageCode.Success, result, null);
+        return new HandleTelegramMessageResult(HandleTelegramMessageCode.Success, response);
     }
 
     public static HandleTelegramMessageResult Failure(string error)
     {
-        return new HandleTelegramMessageResult(HandleTelegramMessageCode.Failure, null, error);
+        return new HandleTelegramMessageResult(HandleTelegramMessageCode.Failure, error);
     }
 }
 

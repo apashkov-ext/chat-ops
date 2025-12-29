@@ -100,6 +100,6 @@ public class TelegramMessageHandlerTests
         var result = await _handler.Handle(message);
         
         Assert.Equal(HandleTelegramMessageCode.Success, result.Code);
-        Assert.StartsWith("Доступные команды", result.Result);
+        Assert.StartsWith("<b>Доступные команды</b>", result.Result);
     }
 }

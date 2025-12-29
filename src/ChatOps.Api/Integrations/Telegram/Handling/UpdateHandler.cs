@@ -62,7 +62,7 @@ internal sealed class UpdateHandler : IUpdateHandler
                 break;
             
             case HandleTelegramMessageCode.Failure:
-                _logger.LogWarning("Text command handling failure: '{ErrorMessage:l}'", result.Error);
+                _logger.LogWarning("Text command handling failure: '{ErrorMessage:l}'", result.Response);
                 break;
             
             case HandleTelegramMessageCode.UnknownCommand:
@@ -74,12 +74,12 @@ internal sealed class UpdateHandler : IUpdateHandler
                 break;
         }
         
-        if (result.HasResult)
+        if (result.HasResponse)
         {
-            _logger.LogInformation("Sending response to chat: {Response:l}", result.Result!);
+            _logger.LogInformation("Sending response to chat: {Response:l}", result.Response!);
             _ = await _chatApi.SendHtmlMessage(
                 update.Message.Chat.Id, 
-                result.Result!, 
+                result.Response!, 
                 ct);
         }
     }
