@@ -1,14 +1,27 @@
-﻿using Telegram.Bot.Types;
+﻿using ChatOps.App.UseCases.ListResources;
+using ChatOps.App.UseCases.ReleaseResource;
+using ChatOps.App.UseCases.TakeResource;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace ChatOps.Api.Integrations.Telegram.Handling;
 
 internal sealed class TelegramMessageHandler : ITelegramMessageHandler
 {
+    private readonly IListResourcesUseCase _listResourcesUseCase;
+    private readonly ITakeResourceUseCase _takeResourceUseCase;
+    private readonly IReleaseResourceUseCase _releaseResourceUseCase;
     private readonly ILogger<TelegramMessageHandler> _logger;
 
-    public TelegramMessageHandler(ILogger<TelegramMessageHandler> logger)
+    public TelegramMessageHandler(
+        IListResourcesUseCase listResourcesUseCase,
+        ITakeResourceUseCase takeResourceUseCase,
+        IReleaseResourceUseCase releaseResourceUseCase,
+        ILogger<TelegramMessageHandler> logger)
     {
+        _listResourcesUseCase = listResourcesUseCase;
+        _takeResourceUseCase = takeResourceUseCase;
+        _releaseResourceUseCase = releaseResourceUseCase;
         _logger = logger;
     }
     
@@ -31,45 +44,48 @@ internal sealed class TelegramMessageHandler : ITelegramMessageHandler
         if (tokens.Empty)
         {
             _logger.LogInformation("Empty command, skipping");
-            return HandleTelegramMessageResult.Success(string.Empty);
+            return HandleTelegramMessageResult.Success("Введите /help для отображения доступных команд");
         }
-        
-        var queue = new Queue<string>(tokens.Tokens);
-        var token = queue.Dequeue();
+
+        var buffer = tokens.GetBuffer();
+        var token = buffer.Take();
 
         if (token == WellKnownCommandTokens.Start)
         {
             return HandleTelegramMessageResult.Success("Будем знакомы");
         }
 
-        if (token != WellKnownCommandTokens.Env)
+        if (token == WellKnownCommandTokens.Help)
         {
-            return HandleTelegramMessageResult.UnknownCommand(token);
-        }
-
-        if (queue.Count == 0)
-        {
-            var help = BuildHelpText();
+            var help = Stringifier.BuildHelpText();
             return HandleTelegramMessageResult.Success(help);
         }
 
-        return await HandleEnvCommands(queue);
+        if (token == WellKnownCommandTokens.Env)
+        {
+            return await HandleEnvCommands(buffer);
+        }
+
+        return  HandleTelegramMessageResult.UnknownCommand();
     }
 
-    private static string BuildHelpText()
+    private async Task<HandleTelegramMessageResult> HandleEnvCommands(CommandBuffer buffer)
     {
-        return
-            $"""
-            Доступные команды:
-            {WellKnownCommandTokens.Env} {WellKnownCommandTokens.List}
-            {WellKnownCommandTokens.Env} {WellKnownCommandTokens.Take} dev1 [my-branch]
-            {WellKnownCommandTokens.Env} {WellKnownCommandTokens.Release} dev1
-            """
-            ;
-    }
+        if (buffer.Empty)
+        {
+            return HandleTelegramMessageResult.UnknownCommand();
+        }
 
-    private async Task<HandleTelegramMessageResult> HandleEnvCommands(Queue<string> restTokens)
-    {
-        return HandleTelegramMessageResult.UnknownCommand(string.Empty);
+        var token = buffer.Take();
+        switch (token)
+        {
+            case WellKnownCommandTokens.List:
+                var response = await _listResourcesUseCase.Execute();
+                var list = Stringifier.BuildList(response);
+                return HandleTelegramMessageResult.Success(list);
+            
+            default:
+                return HandleTelegramMessageResult.UnknownCommand();
+        }
     }
 }

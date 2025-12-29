@@ -1,16 +1,18 @@
-﻿using System.Collections.Immutable;
-
-namespace ChatOps.Api.Integrations.Telegram.Handling;
+﻿namespace ChatOps.Api.Integrations.Telegram.Handling;
 
 internal sealed class CommandTokenCollection
 {
-    public ImmutableArray<string> Tokens { get; }
+    private const char _separator = ' ';
+    private readonly string _stringRepresentation;
+
+    private readonly string[] _tokens;
     
-    public bool Empty => Tokens.IsEmpty;
+    public bool Empty => _tokens.Length == 0;
 
     private CommandTokenCollection(IEnumerable<string> tokens)
     {
-        Tokens = [..tokens];
+        _tokens = [..tokens];
+        _stringRepresentation = string.Join(_separator, _tokens);
     }
     
     public static CommandTokenCollection Parse(string input)
@@ -20,7 +22,30 @@ internal sealed class CommandTokenCollection
             return new CommandTokenCollection([]);
         }
 
-        var tokens = input.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var tokens = input.Split(_separator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         return new CommandTokenCollection(tokens);
+    }
+
+    public CommandBuffer GetBuffer() => new (_tokens);
+
+    public override string ToString() => _stringRepresentation;
+}
+
+internal sealed class CommandBuffer
+{
+    private readonly Queue<string> _tokens;
+    
+    public bool Empty => _tokens.Count == 0;
+    
+    public CommandBuffer(IEnumerable<string> tokens)
+    {
+        _tokens = new Queue<string>(tokens);
+    }
+    
+    public string Take()
+    {
+        return _tokens.TryDequeue(out var token) 
+            ? token 
+            : throw new InvalidOperationException("Empty buffer");
     }
 }

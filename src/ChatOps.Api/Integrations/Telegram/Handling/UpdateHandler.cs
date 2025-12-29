@@ -8,12 +8,15 @@ namespace ChatOps.Api.Integrations.Telegram.Handling;
 internal sealed class UpdateHandler : IUpdateHandler
 {
     private readonly ITelegramMessageHandler _messageHandler;
+    private readonly ITelegramChatApi _chatApi;
     private readonly ILogger<UpdateHandler> _logger;
 
     public UpdateHandler(ITelegramMessageHandler messageHandler,
+        ITelegramChatApi chatApi,
         ILogger<UpdateHandler> logger)
     {
         _messageHandler = messageHandler;
+        _chatApi = chatApi;
         _logger = logger;
     }
     
@@ -55,12 +58,6 @@ internal sealed class UpdateHandler : IUpdateHandler
         {
             case HandleTelegramMessageCode.Success:
                 _logger.LogInformation("Text command handling successfully");
-
-                if (result.HasResult)
-                {
-                    _logger.LogInformation("Sending response to chat: {Response:l}", result.Result!);
-                    _ = await SendTextMessage(botClient, update.Message.Chat.Id, result.Result!, ct);
-                }
                 
                 break;
             
@@ -76,6 +73,15 @@ internal sealed class UpdateHandler : IUpdateHandler
                 _logger.LogWarning("Unknown text command handling code: '{Code}'", result.Code);
                 break;
         }
+        
+        if (result.HasResult)
+        {
+            _logger.LogInformation("Sending response to chat: {Response:l}", result.Result!);
+            _ = await _chatApi.SendHtmlMessage(
+                update.Message.Chat.Id, 
+                result.Result!, 
+                ct);
+        }
     }
 
     public Task HandleErrorAsync(ITelegramBotClient botClient, 
@@ -86,25 +92,5 @@ internal sealed class UpdateHandler : IUpdateHandler
         _logger.LogError(exception, "Error '{ErrorSource}' occured while handling telegram message",
             source);
         return Task.CompletedTask;
-    }
-
-    private async Task<Message?> SendTextMessage(ITelegramBotClient botClient, 
-        long chatId,
-        string text, 
-        CancellationToken ct)
-    {
-        try
-        {
-            return await botClient.SendMessage(chatId: chatId,
-                text: text,
-                parseMode: ParseMode.Markdown,
-                cancellationToken: ct);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Error occured while sending text message '{TextMessage:l}' to chat",
-                text);
-            return null;
-        }
     }
 }

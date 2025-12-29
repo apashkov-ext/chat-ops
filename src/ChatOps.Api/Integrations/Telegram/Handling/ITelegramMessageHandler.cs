@@ -14,9 +14,9 @@ internal sealed record HandleTelegramMessageResult(
 {
     public bool HasResult => !string.IsNullOrWhiteSpace(Result);
     
-    public static HandleTelegramMessageResult UnknownCommand(string error)
+    public static HandleTelegramMessageResult UnknownCommand()
     {
-        return new HandleTelegramMessageResult(HandleTelegramMessageCode.UnknownCommand, default, error);
+        return new HandleTelegramMessageResult(HandleTelegramMessageCode.UnknownCommand, null, null);
     }
     
     public static HandleTelegramMessageResult Success(string result)
@@ -26,7 +26,7 @@ internal sealed record HandleTelegramMessageResult(
 
     public static HandleTelegramMessageResult Failure(string error)
     {
-        return new HandleTelegramMessageResult(HandleTelegramMessageCode.Failure, default, error);
+        return new HandleTelegramMessageResult(HandleTelegramMessageCode.Failure, null, error);
     }
 }
 

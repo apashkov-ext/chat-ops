@@ -22,5 +22,6 @@ internal static class ServiceCollectionExtensions
         
         services.AddTransient<IUpdateHandler, UpdateHandler>();
         services.AddTransient<ITelegramMessageHandler, TelegramMessageHandler>();
+        services.AddTransient<ITelegramChatApi, TelegramChatApi>();
     }
 }
