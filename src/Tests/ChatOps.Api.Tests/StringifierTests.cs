@@ -1,6 +1,5 @@
 ﻿using ChatOps.Api.Integrations.Telegram.Handling;
 using ChatOps.App.Core.Models;
-using ChatOps.App.UseCases.ListResources;
 
 namespace ChatOps.Api.Tests;
 
@@ -33,7 +32,7 @@ public class StringifierTests
                  """
             ;
         
-        ResourceInfo[] model = [];
+        Resource[] model = [];
         var actualMessage = Stringifier.BuildList(model);
         
         Assert.Equal(expectedMessage, actualMessage);
@@ -52,30 +51,27 @@ public class StringifierTests
                 """
             ;
         
-        ResourceInfo[] model = 
+        Resource[] model = 
         [
-            new (new Resource
+            new Resource
             {
                 Id = new ResourceId(Guid.NewGuid().ToString()),
                 Name = "dev",
                 State = ResourceState.Free
-            }, null),
-            new (new Resource
+            },
+            new Resource
             {
                 Id = new ResourceId(Guid.NewGuid().ToString()),
                 Name = "dev1",
-                State = ResourceState.Reserved
-            }, new Holder
-            {
-                Id = new HolderId(Guid.NewGuid().ToString()),
-                Name = "@user"
-            }),
-            new (new Resource
+                State = ResourceState.Reserved,
+                Holder = "@user"
+            },
+            new Resource
             {
                 Id = new ResourceId(Guid.NewGuid().ToString()),
                 Name = "dev2",
                 State = ResourceState.Free
-            }, null)
+            }
         ];
         var actualMessage = Stringifier.BuildList(model);
         

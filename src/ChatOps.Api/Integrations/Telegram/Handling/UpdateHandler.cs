@@ -16,9 +16,9 @@ internal sealed class UpdateHandler : IUpdateHandler
         _chatApi = chatApi;
         _logger = logger;
     }
-    
-    public async Task HandleUpdateAsync(ITelegramBotClient botClient, 
-        Update update, 
+
+    public async Task HandleUpdateAsync(ITelegramBotClient botClient,
+        Update update,
         CancellationToken ct)
     {
         using var loggerScope = _logger.BeginScope(new Dictionary<string, object?>
@@ -27,7 +27,7 @@ internal sealed class UpdateHandler : IUpdateHandler
             ["MessageType"] = update.Message?.Type,
             ["MessageText"] = update.Message?.Text
         });
-        
+
         if (update.Type != UpdateType.Message)
         {
             _logger.LogInformation("Unsupported update type: {UpdateType}", update.Type);
@@ -39,29 +39,28 @@ internal sealed class UpdateHandler : IUpdateHandler
             _logger.LogInformation("Message is null");
             return;
         }
-        
+
         var result = await _messageHandler.Handle(update.Message, ct);
         await result.SwitchAsync(
             async reply =>
             {
                 _logger.LogInformation("Text command handling successfully");
-               await _chatApi.SendHtmlMessage(update.Message.Chat.Id, reply.Text, ct);
+                await _chatApi.SendHtmlMessage(update.Message.Chat.Id, reply.Text, ct);
             },
-            failure =>
+            async failure =>
             {
                 _logger.LogWarning("Text command handling failure: '{ErrorMessage:l}'", failure.Error);
-                return Task.CompletedTask;
+                await _chatApi.SendHtmlMessage(update.Message.Chat.Id, failure.Error, ct);
             },
             async unknown =>
             {
                 _logger.LogWarning("Unknown command '{Command:l}'", update.Message.Text);
                 _ = await _chatApi.SendHtmlMessage(
-                    update.Message.Chat.Id, 
-                    "неизвестная команда", 
+                    update.Message.Chat.Id,
+                    "Неизвестная команда",
                     ct);
             }
         );
-        
     }
 
     public Task HandleErrorAsync(ITelegramBotClient botClient, 

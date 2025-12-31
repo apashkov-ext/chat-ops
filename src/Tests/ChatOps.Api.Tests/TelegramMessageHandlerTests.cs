@@ -25,8 +25,8 @@ public class TelegramMessageHandlerTests
 
         var result = await _handler.Handle(message);
         
-        Assert.Equal(HandleTelegramMessageCode.Failure, result.Code);
-        Assert.Equal("Unsupported message type", result.Response);
+        Assert.True(result.TryPickT1(out var failure, out _));
+        Assert.Equal("Unsupported message type", failure.Error);
     }
     
     [Fact]
@@ -39,8 +39,8 @@ public class TelegramMessageHandlerTests
 
         var result = await _handler.Handle(message);
         
-        Assert.Equal(HandleTelegramMessageCode.Failure, result.Code);
-        Assert.Equal("FROM is null", result.Response);
+        Assert.True(result.TryPickT1(out var failure, out _));
+        Assert.Equal("FROM is null", failure.Error);
     }    
     
     [Fact]
@@ -59,8 +59,8 @@ public class TelegramMessageHandlerTests
 
         var result = await _handler.Handle(message);
         
-        Assert.Equal(HandleTelegramMessageCode.Success, result.Code);
-        Assert.Equal("Введите /help для отображения доступных команд", result.Response);
+        Assert.True(result.TryPickT0(out var reply, out _));
+        Assert.Equal("Введите /help для отображения доступных команд", reply.Text);
     }
     
     [Fact]
@@ -79,8 +79,8 @@ public class TelegramMessageHandlerTests
 
         var result = await _handler.Handle(message);
         
-        Assert.Equal(HandleTelegramMessageCode.Success, result.Code);
-        Assert.Equal("Будем знакомы", result.Response);
+        Assert.True(result.TryPickT0(out var reply, out _));
+        Assert.Equal("Будем знакомы", reply.Text);
     }    
     
     [Fact]
@@ -99,7 +99,7 @@ public class TelegramMessageHandlerTests
 
         var result = await _handler.Handle(message);
         
-        Assert.Equal(HandleTelegramMessageCode.Success, result.Code);
-        Assert.StartsWith("<b>Доступные команды</b>", result.Response);
+        Assert.True(result.TryPickT0(out var reply, out _));
+        Assert.StartsWith("<b>Доступные команды</b>", reply.Text);
     }
 }

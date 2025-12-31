@@ -1,6 +1,7 @@
 ﻿using ChatOps.App.UseCases.ListResources;
 using ChatOps.App.UseCases.ReleaseResource;
 using ChatOps.App.UseCases.TakeResource;
+using OneOf;
 
 namespace ChatOps.Api.Integrations.Telegram.Handling;
 
@@ -28,13 +29,13 @@ internal sealed class TelegramMessageHandler : ITelegramMessageHandler
         if (message.Type != MessageType.Text)
         {
             _logger.LogInformation("Unsupported message type: {MessageType}", message.Type);
-            return HandleTelegramMessageResult.Failure("Unsupported message type");
+            return new TelegramHandlerFailure("Unsupported message type");
         }
         
         if (message.From is null)
         {
             _logger.LogInformation("Message.From is null");
-            return HandleTelegramMessageResult.Failure("FROM is null");
+            return new TelegramHandlerFailure("FROM is null");
         }
         
         var command  = message.Text ?? string.Empty;
@@ -42,7 +43,7 @@ internal sealed class TelegramMessageHandler : ITelegramMessageHandler
         if (tokens.Empty)
         {
             _logger.LogInformation("Empty command, skipping");
-            return HandleTelegramMessageResult.Success("Введите /help для отображения доступных команд");
+            return new TelegramReply($"Введите {WellKnownCommandTokens.Help} для отображения доступных команд");
         }
 
         var buffer = tokens.GetBuffer();
@@ -50,13 +51,13 @@ internal sealed class TelegramMessageHandler : ITelegramMessageHandler
 
         if (token == WellKnownCommandTokens.Start)
         {
-            return HandleTelegramMessageResult.Success("Будем знакомы");
+            return new TelegramReply("Будем знакомы");
         }
 
         if (token == WellKnownCommandTokens.Help)
         {
             var help = Stringifier.BuildHelpText();
-            return HandleTelegramMessageResult.Success(help);
+            return new TelegramReply(help);
         }
 
         if (token == WellKnownCommandTokens.Env)
@@ -64,14 +65,14 @@ internal sealed class TelegramMessageHandler : ITelegramMessageHandler
             return await HandleEnvCommands(buffer);
         }
 
-        return  HandleTelegramMessageResult.UnknownCommand();
+        return new UnknownCommand();
     }
 
-    private async Task<HandleTelegramMessageResult> HandleEnvCommands(CommandBuffer buffer)
+    private async Task<TgHandlerResult> HandleEnvCommands(CommandBuffer buffer)
     {
         if (buffer.Empty)
         {
-            return HandleTelegramMessageResult.UnknownCommand();
+            return new UnknownCommand();
         }
 
         var token = buffer.Take();
@@ -80,10 +81,10 @@ internal sealed class TelegramMessageHandler : ITelegramMessageHandler
             case WellKnownCommandTokens.List:
                 var response = await _listResourcesUseCase.Execute();
                 var list = Stringifier.BuildList(response);
-                return HandleTelegramMessageResult.Success(list);
+                return new TelegramReply(list);
             
             default:
-                return HandleTelegramMessageResult.UnknownCommand();
+                return new UnknownCommand();
         }
     }
 }

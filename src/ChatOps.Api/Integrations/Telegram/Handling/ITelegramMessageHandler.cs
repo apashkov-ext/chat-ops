@@ -1,6 +1,4 @@
-﻿using Telegram.Bot.Types;
-
-namespace ChatOps.Api.Integrations.Telegram.Handling;
+﻿namespace ChatOps.Api.Integrations.Telegram.Handling;
 
 internal interface ITelegramMessageHandler
 {
@@ -12,4 +10,4 @@ internal sealed record TelegramReply(string Text)
     public static implicit operator TelegramReply(string text) => new(text);
 }
 internal sealed record TelegramHandlerFailure(string Error);
-internal sealed record UnknownCommand();
+internal sealed record UnknownCommand;

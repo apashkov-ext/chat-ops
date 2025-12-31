@@ -19,7 +19,7 @@ internal static class Stringifier
             ;
     }
 
-    public static string BuildList(IReadOnlyList<ResourceInfo> model)
+    public static string BuildList(IReadOnlyList<Resource> model)
     {
         var resources = model.Count == 0 
             ? ["[пусто]"] 
@@ -34,12 +34,12 @@ internal static class Stringifier
             ;
     }
 
-    private static string Stringify(ResourceInfo resourceInfo)
+    private static string Stringify(Resource resource)
     {
-        var sb = new StringBuilder(resourceInfo.Resource.Name);
+        var sb = new StringBuilder(resource.Name);
         sb.Append(", ");
 
-        switch (resourceInfo.Resource.State)
+        switch (resource.State)
         {
             case ResourceState.Free:
                 sb.Append("свободен");
@@ -48,8 +48,7 @@ internal static class Stringifier
             case ResourceState.Reserved:
                 sb.Append("занят ");
 
-                var holder = Stringify(resourceInfo.Holder);
-                sb.Append(holder ?? "неизвестно кем");
+                sb.Append(resource.Holder ?? "неизвестно кем");
                 break;
             
             default:
@@ -58,11 +57,6 @@ internal static class Stringifier
         }
 
         return sb.ToString();
-    }
-
-    private static string? Stringify(Holder? holder)
-    {
-        return holder?.Name;
     }
 }
 
