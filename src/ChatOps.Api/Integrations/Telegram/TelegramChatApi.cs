@@ -1,12 +1,10 @@
-﻿using Telegram.Bot;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
+﻿using OneOf;
 
 namespace ChatOps.Api.Integrations.Telegram;
 
 internal interface ITelegramChatApi
 {
-    Task<Message?> SendHtmlMessage(long chatId, string text, CancellationToken ct = default);
+    Task<OneOf<Message, SendTelegramMessageFailure>> SendHtmlMessage(long chatId, string text, CancellationToken ct = default);
 }
 
 internal sealed class TelegramChatApi : ITelegramChatApi
@@ -21,8 +19,9 @@ internal sealed class TelegramChatApi : ITelegramChatApi
         _logger = logger;
     }
 
-    public async Task<Message?> SendHtmlMessage(long chatId, string text, CancellationToken ct = default)
+    public async Task<OneOf<Message, SendTelegramMessageFailure>> SendHtmlMessage(long chatId, string text, CancellationToken ct = default)
     {
+        _logger.LogInformation("Sending response to chat: {Response:l}", text);
         try
         {
             return await _botClient.SendMessage(chatId: chatId,
@@ -35,7 +34,9 @@ internal sealed class TelegramChatApi : ITelegramChatApi
             _logger.LogError(e, "Error occured while sending text message '{TextMessage:l}' to chat '{ChatId}'",
                 text,
                 chatId);
-            return null;
+            return new SendTelegramMessageFailure();
         }
     }
 }
+
+internal sealed record SendTelegramMessageFailure;

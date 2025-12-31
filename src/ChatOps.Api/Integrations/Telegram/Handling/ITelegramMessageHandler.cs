@@ -4,34 +4,12 @@ namespace ChatOps.Api.Integrations.Telegram.Handling;
 
 internal interface ITelegramMessageHandler
 {
-    Task<HandleTelegramMessageResult> Handle(Message message, CancellationToken ct = default);
+    Task<TgHandlerResult> Handle(Message message, CancellationToken ct = default);
 }
 
-internal sealed record HandleTelegramMessageResult(
-    HandleTelegramMessageCode Code, 
-    string? Response)
+internal sealed record TelegramReply(string Text)
 {
-    public bool HasResponse => !string.IsNullOrWhiteSpace(Response);
-    
-    public static HandleTelegramMessageResult UnknownCommand()
-    {
-        return new HandleTelegramMessageResult(HandleTelegramMessageCode.UnknownCommand, null);
-    }
-    
-    public static HandleTelegramMessageResult Success(string response)
-    {
-        return new HandleTelegramMessageResult(HandleTelegramMessageCode.Success, response);
-    }
-
-    public static HandleTelegramMessageResult Failure(string error)
-    {
-        return new HandleTelegramMessageResult(HandleTelegramMessageCode.Failure, error);
-    }
+    public static implicit operator TelegramReply(string text) => new(text);
 }
-
-internal enum HandleTelegramMessageCode
-{
-    UnknownCommand,
-    Success,
-    Failure
-}
+internal sealed record TelegramHandlerFailure(string Error);
+internal sealed record UnknownCommand();

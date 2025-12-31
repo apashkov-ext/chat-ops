@@ -1,7 +1,4 @@
-using Telegram.Bot;
 using Telegram.Bot.Polling;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 
 namespace ChatOps.Api.Integrations.Telegram.Handling;
 
@@ -43,45 +40,28 @@ internal sealed class UpdateHandler : IUpdateHandler
             return;
         }
         
-        HandleTelegramMessageResult result;
-        try
-        {
-            result = await _messageHandler.Handle(update.Message, ct);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Error occured while handling text command '{Text:l}' from message", update.Message.Text);
-            return;
-        }
-
-        switch (result.Code)
-        {
-            case HandleTelegramMessageCode.Success:
+        var result = await _messageHandler.Handle(update.Message, ct);
+        await result.SwitchAsync(
+            async reply =>
+            {
                 _logger.LogInformation("Text command handling successfully");
-                
-                break;
-            
-            case HandleTelegramMessageCode.Failure:
-                _logger.LogWarning("Text command handling failure: '{ErrorMessage:l}'", result.Response);
-                break;
-            
-            case HandleTelegramMessageCode.UnknownCommand:
+               await _chatApi.SendHtmlMessage(update.Message.Chat.Id, reply.Text, ct);
+            },
+            failure =>
+            {
+                _logger.LogWarning("Text command handling failure: '{ErrorMessage:l}'", failure.Error);
+                return Task.CompletedTask;
+            },
+            async unknown =>
+            {
                 _logger.LogWarning("Unknown command '{Command:l}'", update.Message.Text);
-                break;
-            
-            default:
-                _logger.LogWarning("Unknown text command handling code: '{Code}'", result.Code);
-                break;
-        }
+                _ = await _chatApi.SendHtmlMessage(
+                    update.Message.Chat.Id, 
+                    "неизвестная команда", 
+                    ct);
+            }
+        );
         
-        if (result.HasResponse)
-        {
-            _logger.LogInformation("Sending response to chat: {Response:l}", result.Response!);
-            _ = await _chatApi.SendHtmlMessage(
-                update.Message.Chat.Id, 
-                result.Response!, 
-                ct);
-        }
     }
 
     public Task HandleErrorAsync(ITelegramBotClient botClient, 

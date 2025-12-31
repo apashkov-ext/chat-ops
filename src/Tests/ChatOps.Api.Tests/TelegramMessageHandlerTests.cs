@@ -26,7 +26,7 @@ public class TelegramMessageHandlerTests
         var result = await _handler.Handle(message);
         
         Assert.Equal(HandleTelegramMessageCode.Failure, result.Code);
-        Assert.Equal("Unsupported message type", result.Error);
+        Assert.Equal("Unsupported message type", result.Response);
     }
     
     [Fact]
@@ -40,7 +40,7 @@ public class TelegramMessageHandlerTests
         var result = await _handler.Handle(message);
         
         Assert.Equal(HandleTelegramMessageCode.Failure, result.Code);
-        Assert.Equal("FROM is null", result.Error);
+        Assert.Equal("FROM is null", result.Response);
     }    
     
     [Fact]
@@ -60,7 +60,7 @@ public class TelegramMessageHandlerTests
         var result = await _handler.Handle(message);
         
         Assert.Equal(HandleTelegramMessageCode.Success, result.Code);
-        Assert.Equal("Введите /help для отображения доступных команд", result.Result);
+        Assert.Equal("Введите /help для отображения доступных команд", result.Response);
     }
     
     [Fact]
@@ -80,7 +80,7 @@ public class TelegramMessageHandlerTests
         var result = await _handler.Handle(message);
         
         Assert.Equal(HandleTelegramMessageCode.Success, result.Code);
-        Assert.Equal("Будем знакомы", result.Result);
+        Assert.Equal("Будем знакомы", result.Response);
     }    
     
     [Fact]
@@ -100,6 +100,6 @@ public class TelegramMessageHandlerTests
         var result = await _handler.Handle(message);
         
         Assert.Equal(HandleTelegramMessageCode.Success, result.Code);
-        Assert.StartsWith("<b>Доступные команды</b>", result.Result);
+        Assert.StartsWith("<b>Доступные команды</b>", result.Response);
     }
 }

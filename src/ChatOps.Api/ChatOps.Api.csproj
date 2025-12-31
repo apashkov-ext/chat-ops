@@ -6,11 +6,14 @@
 
     <ItemGroup>
       <ProjectReference Include="..\ChatOps.App\ChatOps.App.csproj" />
+      <ProjectReference Include="..\ChatOps.Infra\ChatOps.Infra.csproj" />
+      <ProjectReference Include="..\ChatOps.SharedKernel\ChatOps.SharedKernel.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
       <PackageReference Include="Telegram.Bot" />
+      <PackageReference Include="OneOf" />
     </ItemGroup>
 
 </Project>

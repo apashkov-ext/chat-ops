@@ -1,8 +1,6 @@
 ﻿using ChatOps.App.UseCases.ListResources;
 using ChatOps.App.UseCases.ReleaseResource;
 using ChatOps.App.UseCases.TakeResource;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 
 namespace ChatOps.Api.Integrations.Telegram.Handling;
 
@@ -25,7 +23,7 @@ internal sealed class TelegramMessageHandler : ITelegramMessageHandler
         _logger = logger;
     }
     
-    public async Task<HandleTelegramMessageResult> Handle(Message message, CancellationToken ct = default)
+    public async Task<TgHandlerResult> Handle(Message message, CancellationToken ct = default)
     {
         if (message.Type != MessageType.Text)
         {

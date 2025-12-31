@@ -1,6 +1,5 @@
 ﻿using ChatOps.Api.Integrations.Telegram.Handling;
 using Microsoft.Extensions.Options;
-using Telegram.Bot;
 using Telegram.Bot.Polling;
 
 namespace ChatOps.Api.Integrations.Telegram;

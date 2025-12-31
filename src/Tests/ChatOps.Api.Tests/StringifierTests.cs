@@ -10,10 +10,11 @@ public class StringifierTests
     public void BuildHelpText_SheuldReturnHelpMessage()
     {
         const string expectedMessage = """
-                                       Доступные команды:
-                                       env list
-                                       env take dev1 [my-branch]
-                                       env release dev1
+                                       <b>Доступные команды</b>
+                                       
+                                        <code>env list</code>
+                                        <code>env take dev1 [branch]</code>
+                                        <code>env release dev1</code>
                                        """;
 
         var actualMessage = Stringifier.BuildHelpText();
@@ -26,7 +27,8 @@ public class StringifierTests
     {
         var expectedMessage =
                 $"""
-                 Список ресурсов:
+                 <b>Список ресурсов</b>
+                 
                  [пусто]
                  """
             ;
@@ -42,10 +44,11 @@ public class StringifierTests
     {
         var expectedMessage =
                 """
-                Список ресурсов:
-                1. dev, свободен
-                2. dev1, занят @user
-                3. dev2, свободен
+                <b>Список ресурсов</b>
+                
+                 1. dev, свободен
+                 2. dev1, занят @user
+                 3. dev2, свободен
                 """
             ;
         
