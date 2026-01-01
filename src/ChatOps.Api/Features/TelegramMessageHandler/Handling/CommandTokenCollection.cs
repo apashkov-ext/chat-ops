@@ -1,4 +1,4 @@
-﻿namespace ChatOps.Api.Integrations.Telegram.Handling;
+﻿namespace ChatOps.Api.Features.TelegramMessageHandler.Handling;
 
 internal sealed class CommandTokenCollection
 {

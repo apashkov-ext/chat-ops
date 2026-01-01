@@ -1,4 +1,16 @@
-﻿namespace ChatOps.Api.Adapters.Http;
+﻿namespace ChatOps.Api.Extensions;
+
+internal static class WebApplicationExtensions
+{
+    /// <summary>
+    /// Настраивает мэппинг http-роутов. 
+    /// </summary>
+    /// <param name="app"></param>
+    public static void MapFeatures(this WebApplication app)
+    {
+        
+    }
+}
 
 internal static class EndpointRouteBuilderExtensions
 {

@@ -1,6 +1,6 @@
 ﻿using OneOf;
 
-namespace ChatOps.Api.Integrations.Telegram;
+namespace ChatOps.Api.Features.TelegramMessageHandler.Telegram;
 
 internal interface ITelegramChatApi
 {

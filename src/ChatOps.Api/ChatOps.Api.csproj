@@ -16,4 +16,9 @@
       <PackageReference Include="OneOf" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Adapters\BackgroundServices\" />
+      <Folder Include="Features\ListResources\" />
+    </ItemGroup>
+
 </Project>

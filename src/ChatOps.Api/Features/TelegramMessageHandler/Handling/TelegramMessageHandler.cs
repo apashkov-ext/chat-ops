@@ -1,9 +1,8 @@
 ﻿using ChatOps.App.UseCases.ListResources;
 using ChatOps.App.UseCases.ReleaseResource;
 using ChatOps.App.UseCases.TakeResource;
-using OneOf;
 
-namespace ChatOps.Api.Integrations.Telegram.Handling;
+namespace ChatOps.Api.Features.TelegramMessageHandler.Handling;
 
 internal sealed class TelegramMessageHandler : ITelegramMessageHandler
 {
@@ -62,13 +61,13 @@ internal sealed class TelegramMessageHandler : ITelegramMessageHandler
 
         if (token == WellKnownCommandTokens.Env)
         {
-            return await HandleEnvCommands(buffer);
+            return await HandleEnvCommands(buffer, ct);
         }
 
         return new UnknownCommand();
     }
 
-    private async Task<TgHandlerResult> HandleEnvCommands(CommandBuffer buffer)
+    private async Task<TgHandlerResult> HandleEnvCommands(CommandBuffer buffer, CancellationToken ct)
     {
         if (buffer.Empty)
         {
@@ -79,7 +78,7 @@ internal sealed class TelegramMessageHandler : ITelegramMessageHandler
         switch (token)
         {
             case WellKnownCommandTokens.List:
-                var response = await _listResourcesUseCase.Execute();
+                var response = await _listResourcesUseCase.Execute(ct);
                 var list = Stringifier.BuildList(response);
                 return new TelegramReply(list);
             
@@ -88,3 +87,15 @@ internal sealed class TelegramMessageHandler : ITelegramMessageHandler
         }
     }
 }
+
+internal interface ITelegramMessageHandler
+{
+    Task<TgHandlerResult> Handle(Message message, CancellationToken ct = default);
+}
+
+internal sealed record TelegramReply(string Text)
+{
+    public static implicit operator TelegramReply(string text) => new(text);
+}
+internal sealed record TelegramHandlerFailure(string Error);
+internal sealed record UnknownCommand;

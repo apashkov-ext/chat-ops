@@ -1,4 +1,4 @@
-﻿using ChatOps.Api.Integrations.Telegram.Handling;
+﻿using ChatOps.Api.Features.TelegramMessageHandler.Handling;
 using ChatOps.App.Core.Models;
 
 namespace ChatOps.Api.Tests;

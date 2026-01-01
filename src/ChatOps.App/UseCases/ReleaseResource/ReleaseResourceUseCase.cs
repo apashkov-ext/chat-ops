@@ -7,7 +7,7 @@ public interface IReleaseResourceUseCase
 
 public record ReleaseResourceResult;
 
-internal sealed class ReleaseResourceUseCase : IReleaseResourceUseCase
+public sealed class ReleaseResourceUseCase : IReleaseResourceUseCase
 {
     public Task<ReleaseResourceResult> Execute(string name, CancellationToken ct = default)
     {

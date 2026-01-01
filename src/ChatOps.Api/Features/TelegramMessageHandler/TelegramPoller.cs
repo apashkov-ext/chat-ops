@@ -1,8 +1,6 @@
-﻿using Telegram.Bot;
-using Telegram.Bot.Polling;
-using Telegram.Bot.Types.Enums;
+﻿using Telegram.Bot.Polling;
 
-namespace ChatOps.Api.Adapters.BackgroundServices;
+namespace ChatOps.Api.Features.TelegramMessageHandler;
 
 internal sealed class TelegramPoller : BackgroundService
 {

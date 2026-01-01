@@ -8,7 +8,7 @@ public interface IListResourcesUseCase
     Task<IReadOnlyList<Resource>> Execute(CancellationToken ct = default);
 }
 
-internal sealed class ListResourcesUseCase : IListResourcesUseCase
+public sealed class ListResourcesUseCase : IListResourcesUseCase
 {
     private readonly IGetResources _getResources;
 

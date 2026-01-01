@@ -1,4 +1,4 @@
-using ChatOps.Api.Integrations.Telegram.Handling;
+using ChatOps.Api.Features.TelegramMessageHandler.Handling;
 using Moq.AutoMock;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;

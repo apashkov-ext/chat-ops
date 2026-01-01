@@ -3,7 +3,7 @@ using ChatOps.App.Ports;
 
 namespace ChatOps.Infra.Adapters.InMemory;
 
-internal sealed class InMemoryGetResources : IGetResources
+public sealed class InMemoryGetResources : IGetResources
 {
     private readonly List<Resource> _resources =
     [
