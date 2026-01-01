@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ChatOps.Api.Features.TelegramMessageHandler.Telegram;
+namespace ChatOps.Api.Integrations.Telegram;
 
 internal sealed class TelegramConfig
 {

@@ -1,25 +1,16 @@
-﻿using ChatOps.App.UseCases.ListResources;
-using ChatOps.App.UseCases.ReleaseResource;
-using ChatOps.App.UseCases.TakeResource;
+﻿using ChatOps.Api.Integrations.Telegram.Core;
 
 namespace ChatOps.Api.Features.TelegramMessageHandler.Handling;
 
 internal sealed class TelegramMessageHandler : ITelegramMessageHandler
 {
-    private readonly IListResourcesUseCase _listResourcesUseCase;
-    private readonly ITakeResourceUseCase _takeResourceUseCase;
-    private readonly IReleaseResourceUseCase _releaseResourceUseCase;
+    private readonly ITelegramCommandHandler[] _handlers;
     private readonly ILogger<TelegramMessageHandler> _logger;
 
-    public TelegramMessageHandler(
-        IListResourcesUseCase listResourcesUseCase,
-        ITakeResourceUseCase takeResourceUseCase,
-        IReleaseResourceUseCase releaseResourceUseCase,
+    public TelegramMessageHandler(IEnumerable<ITelegramCommandHandler> handlers,
         ILogger<TelegramMessageHandler> logger)
     {
-        _listResourcesUseCase = listResourcesUseCase;
-        _takeResourceUseCase = takeResourceUseCase;
-        _releaseResourceUseCase = releaseResourceUseCase;
+        _handlers = handlers.ToArray();
         _logger = logger;
     }
     
@@ -42,22 +33,19 @@ internal sealed class TelegramMessageHandler : ITelegramMessageHandler
         if (tokens.Empty)
         {
             _logger.LogInformation("Empty command, skipping");
-            return new TelegramReply($"Введите {WellKnownCommandTokens.Help} для отображения доступных команд");
+            return new TelegramReply(string.Empty);
         }
+        
+        var handler = _handlers.FirstOrDefault(h => h.CanHandle(tokens));
+        if (handler is null)
+        {
+            return new UnknownCommand();
+        }
+        
+        return await handler.Handle(tokens, ct);
 
         var buffer = tokens.GetBuffer();
         var token = buffer.Take();
-
-        if (token == WellKnownCommandTokens.Start)
-        {
-            return new TelegramReply("Будем знакомы");
-        }
-
-        if (token == WellKnownCommandTokens.Help)
-        {
-            var help = Stringifier.BuildHelpText();
-            return new TelegramReply(help);
-        }
 
         if (token == WellKnownCommandTokens.Env)
         {

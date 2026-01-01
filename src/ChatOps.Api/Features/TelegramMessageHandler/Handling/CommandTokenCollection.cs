@@ -1,5 +1,27 @@
 ﻿namespace ChatOps.Api.Features.TelegramMessageHandler.Handling;
 
+internal readonly struct CommandWord
+{
+    public string Value  { get; }
+
+    public CommandWord(string value)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(value);
+        Value = value;
+    }
+}
+
+internal readonly struct CommandArgument
+{
+    public string Value { get; }
+    
+    public CommandArgument(string value)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(value);
+        Value = value;
+    }
+}
+
 internal sealed class CommandTokenCollection
 {
     private const char _separator = ' ';
@@ -23,6 +45,7 @@ internal sealed class CommandTokenCollection
         }
 
         var tokens = input.Split(_separator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        
         return new CommandTokenCollection(tokens);
     }
 

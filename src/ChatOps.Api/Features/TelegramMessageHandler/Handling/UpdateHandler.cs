@@ -1,19 +1,20 @@
-using ChatOps.Api.Features.TelegramMessageHandler.Telegram;
+using ChatOps.Api.Integrations.Telegram;
+using ChatOps.Api.Integrations.Telegram.Core;
 using Telegram.Bot.Polling;
 
 namespace ChatOps.Api.Features.TelegramMessageHandler.Handling;
 
 internal sealed class UpdateHandler : IUpdateHandler
 {
-    private readonly ITelegramMessageHandler _messageHandler;
+    private readonly ITelegramCommandHandler[] _handlers;
     private readonly ITelegramChatApi _chatApi;
     private readonly ILogger<UpdateHandler> _logger;
 
-    public UpdateHandler(ITelegramMessageHandler messageHandler,
+    public UpdateHandler(IEnumerable<ITelegramCommandHandler> handlers,
         ITelegramChatApi chatApi,
         ILogger<UpdateHandler> logger)
     {
-        _messageHandler = messageHandler;
+        _handlers = handlers.ToArray();
         _chatApi = chatApi;
         _logger = logger;
     }
@@ -35,29 +36,61 @@ internal sealed class UpdateHandler : IUpdateHandler
             return;
         }
 
-        if (update.Message is null)
+        var message = update.Message;
+        if (message is null)
         {
             _logger.LogInformation("Message is null");
             return;
         }
+        
+        if (message.Type != MessageType.Text)
+        {
+            _logger.LogInformation("Unsupported message type: {MessageType}", message.Type);
+            return;
+        }
+        
+        if (message.From is null)
+        {
+            _logger.LogInformation("Message.From is null");
+            return;
+        }
+        
+        var command = message.Text ?? string.Empty;
+        var tokens = CommandTokenCollection.Parse(command);
+        if (tokens.Empty)
+        {
+            _logger.LogInformation("Empty command, skipping");
+            return;
+        }
+        
+        var handler = _handlers.FirstOrDefault(h => h.CanHandle(tokens));
+        if (handler is null)
+        {
+            _logger.LogWarning("Unknown command '{Command:l}'", message.Text);
+            await _chatApi.SendHtmlMessage(
+                message.Chat.Id,
+                "Неизвестная команда",
+                ct);
+            return;
+        }
 
-        var result = await _messageHandler.Handle(update.Message, ct);
+        var result = await handler.Handle(tokens, ct);
         await result.SwitchAsync(
             async reply =>
             {
                 _logger.LogInformation("Text command handling successfully");
-                await _chatApi.SendHtmlMessage(update.Message.Chat.Id, reply.Text, ct);
+                await _chatApi.SendHtmlMessage(message.Chat.Id, reply.Text, ct);
             },
             async failure =>
             {
                 _logger.LogWarning("Text command handling failure: '{ErrorMessage:l}'", failure.Error);
-                await _chatApi.SendHtmlMessage(update.Message.Chat.Id, failure.Error, ct);
+                await _chatApi.SendHtmlMessage(message.Chat.Id, failure.Error, ct);
             },
-            async unknown =>
+            async _ =>
             {
-                _logger.LogWarning("Unknown command '{Command:l}'", update.Message.Text);
-                _ = await _chatApi.SendHtmlMessage(
-                    update.Message.Chat.Id,
+                _logger.LogWarning("Unknown command '{Command:l}'", message.Text);
+                await _chatApi.SendHtmlMessage(
+                    message.Chat.Id,
                     "Неизвестная команда",
                     ct);
             }
