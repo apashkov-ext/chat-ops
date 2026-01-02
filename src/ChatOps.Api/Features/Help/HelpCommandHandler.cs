@@ -1,16 +1,24 @@
-﻿using ChatOps.Api.Features.TelegramMessageHandler.Handling;
+﻿using ChatOps.Api.Integrations.Telegram;
 using ChatOps.Api.Integrations.Telegram.Core;
 
 namespace ChatOps.Api.Features.Help;
 
 internal sealed class HelpCommandHandler : ITelegramCommandHandler
 {
-    public bool CanHandle(CommandTokenCollection tokens) => tokens.ToString() == WellKnownCommandTokens.Help;
-
-    public async Task<TgHandlerResult> Handle(CommandTokenCollection tokens, CancellationToken ct = default)
+    public bool CanHandle(CommandTokenCollection collection)
     {
-        var help = Stringifier.BuildHelpText();
-        return new TelegramReply(help);
+        return collection.Tokens is ["/help"];
+    }
 
+    public async Task<TgHandlerResult> Handle(CommandTokenCollection collection, CancellationToken ct = default)
+    {
+        var help = $"""
+                    {TgHtml.B("Доступные команды")}
+
+                     {TgHtml.Code("list")}
+                     {TgHtml.Code("take", "<env>", "[branch]")}
+                     {TgHtml.Code("release", "<env>")}
+                    """;
+        return new TelegramReply(help);
     }
 }

@@ -1,9 +1,42 @@
+using ChatOps.Api.Features.Env.List;
 using ChatOps.Api.Features.TelegramMessageHandler.Handling;
+using ChatOps.Api.Integrations.Telegram.Core;
+using ChatOps.App.UseCases.ListResources;
+using Moq;
 using Moq.AutoMock;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 
 namespace ChatOps.Api.Tests;
+
+public class ListCommandHandlerTests
+{
+    private readonly ListCommandHandler _handler;
+    private readonly Mock<IListResourcesUseCase> _listResourcesUseCase;
+    
+    public ListCommandHandlerTests()
+    {
+        var mocker = new AutoMocker();
+
+        _listResourcesUseCase = new Mock<IListResourcesUseCase>();
+        _listResourcesUseCase.Setup(x => x.Execute(It.IsAny<CancellationToken>())).ReturnsAsync([]);
+        mocker.Use(_listResourcesUseCase);
+        
+        _handler = mocker.CreateInstance<ListCommandHandler>();
+    }
+    
+    [Fact]
+    public async Task ShouldReturnEmptyList()
+    {
+        var result = await _handler.Handle(CommandTokenCollection.Empty);
+        Assert.True(result.TryPickT0(out var reply, out _));
+    }    
+    
+    [Fact]
+    public void ShouldReturnNonEmptyList()
+    {
+        var mocker = new AutoMocker();
+    }
+}
 
 public class TelegramMessageHandlerTests
 {

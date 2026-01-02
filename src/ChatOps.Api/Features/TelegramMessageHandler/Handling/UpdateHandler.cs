@@ -56,14 +56,14 @@ internal sealed class UpdateHandler : IUpdateHandler
         }
         
         var command = message.Text ?? string.Empty;
-        var tokens = CommandTokenCollection.Parse(command);
-        if (tokens.Empty)
+        var collection = CommandTokenCollection.Parse(command);
+        if (collection.Tokens.Count == 0)
         {
             _logger.LogInformation("Empty command, skipping");
             return;
         }
         
-        var handler = _handlers.FirstOrDefault(h => h.CanHandle(tokens));
+        var handler = _handlers.FirstOrDefault(h => h.CanHandle(collection));
         if (handler is null)
         {
             _logger.LogWarning("Unknown command '{Command:l}'", message.Text);
@@ -74,7 +74,7 @@ internal sealed class UpdateHandler : IUpdateHandler
             return;
         }
 
-        var result = await handler.Handle(tokens, ct);
+        var result = await handler.Handle(collection, ct);
         await result.SwitchAsync(
             async reply =>
             {

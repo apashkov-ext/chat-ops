@@ -1,4 +1,4 @@
-﻿namespace ChatOps.Api.Features.TelegramMessageHandler.Handling;
+﻿namespace ChatOps.Api.Integrations.Telegram;
 
 internal static class TgHtml
 {

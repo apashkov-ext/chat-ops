@@ -1,17 +1,16 @@
-﻿using ChatOps.Api.Features.TelegramMessageHandler.Handling;
-using ChatOps.Api.Integrations.Telegram.Core;
+﻿using ChatOps.Api.Integrations.Telegram.Core;
 
 namespace ChatOps.Api.Features.Env.Take;
 
 internal sealed class TakeCommandHandler : ITelegramCommandHandler
 {
-    public bool CanHandle(CommandTokenCollection tokens)
+    public bool CanHandle(CommandTokenCollection collection)
     {
-        throw new NotImplementedException();
+        return collection.Tokens.Count is 2 or 3 && collection.Tokens[0] == "take";
     }
 
-    public Task<TgHandlerResult> Handle(CommandTokenCollection tokens, CancellationToken ct = default)
+    public async Task<TgHandlerResult> Handle(CommandTokenCollection tokens, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        return new TelegramHandlerFailure("Invalid command syntax");
     }
 }

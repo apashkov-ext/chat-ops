@@ -16,8 +16,4 @@
       <PackageReference Include="OneOf" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Features\TelegramMessageHandler\Core\" />
-    </ItemGroup>
-
 </Project>
