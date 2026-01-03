@@ -1,7 +1,7 @@
 ﻿using ChatOps.Api.Integrations.Telegram.Core;
 using ChatOps.App.UseCases.TakeResource;
 
-namespace ChatOps.Api.Features.Env.Take;
+namespace ChatOps.Api.Features.Take;
 
 internal static class Module
 {

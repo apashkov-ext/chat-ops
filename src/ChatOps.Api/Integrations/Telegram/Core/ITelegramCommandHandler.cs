@@ -1,6 +1,4 @@
-﻿using ChatOps.Api.Features.TelegramMessageHandler.Handling;
-
-namespace ChatOps.Api.Integrations.Telegram.Core;
+﻿namespace ChatOps.Api.Integrations.Telegram.Core;
 
 internal interface ITelegramCommandHandler
 {

@@ -1,5 +1,4 @@
-﻿using ChatOps.Api.Features.TelegramMessageHandler.Handling;
-using ChatOps.Api.Integrations.Telegram.Core;
+﻿using ChatOps.Api.Integrations.Telegram.Core;
 
 namespace ChatOps.Api.Features.Start;
 

@@ -1,8 +1,7 @@
-using ChatOps.Api.Integrations.Telegram;
 using ChatOps.Api.Integrations.Telegram.Core;
 using Telegram.Bot.Polling;
 
-namespace ChatOps.Api.Features.TelegramMessageHandler.Handling;
+namespace ChatOps.Api.Integrations.Telegram;
 
 internal sealed class UpdateHandler : IUpdateHandler
 {

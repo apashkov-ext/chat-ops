@@ -1,50 +1,52 @@
-﻿using ChatOps.Api.Features.TelegramMessageHandler.Handling;
+﻿using ChatOps.Api.Features.List;
+using ChatOps.Api.Integrations.Telegram.Core;
 using ChatOps.App.Core.Models;
+using ChatOps.App.UseCases.ListResources;
+using Moq;
+using Moq.AutoMock;
 
 namespace ChatOps.Api.Tests;
 
-public class StringifierTests
+public class ListCommandHandlerTests
 {
-    [Fact]
-    public void BuildHelpText_SheuldReturnHelpMessage()
+    private readonly ListCommandHandler _handler;
+    private readonly Mock<IListResourcesUseCase> _listResourcesUseCase;
+    
+    public ListCommandHandlerTests()
     {
-        const string expectedMessage = """
-                                       <b>Доступные команды</b>
-                                       
-                                        <code>env list</code>
-                                        <code>env take dev1 [branch]</code>
-                                        <code>env release dev1</code>
-                                       """;
+        var mocker = new AutoMocker();
 
-        var actualMessage = Stringifier.BuildHelpText();
+        _listResourcesUseCase = new Mock<IListResourcesUseCase>();
+        _listResourcesUseCase.Setup(x => x.Execute(It.IsAny<CancellationToken>())).ReturnsAsync([]);
+        mocker.Use(_listResourcesUseCase);
         
-        Assert.Equal(expectedMessage, actualMessage);
+        _handler = mocker.CreateInstance<ListCommandHandler>();
     }
-
+    
     [Fact]
-    public void BuildList_ShouldReturnEmptyList()
+    public async Task ShouldReturnEmptyList()
     {
         var expectedMessage =
                 $"""
                  <b>Список ресурсов</b>
-                 
+
                  [пусто]
                  """
             ;
         
-        Resource[] model = [];
-        var actualMessage = Stringifier.BuildList(model);
+        var result = await _handler.Handle(CommandTokenCollection.Empty);
         
-        Assert.Equal(expectedMessage, actualMessage);
+        Assert.True(result.TryPickT0(out var reply, out _));
+        Assert.Equal(expectedMessage, reply.Text);
     }    
     
     [Fact]
-    public void BuildList_ShouldReturnNonEmptyList()
+    public async Task ShouldReturnNonEmptyList()
     {
         var expectedMessage =
                 """
                 <b>Список ресурсов</b>
-                
+
                  1. dev, свободен
                  2. dev1, занят @user
                  3. dev2, свободен
@@ -73,8 +75,11 @@ public class StringifierTests
                 State = ResourceState.Free
             }
         ];
-        var actualMessage = Stringifier.BuildList(model);
+        _listResourcesUseCase.Setup(x => x.Execute(It.IsAny<CancellationToken>())).ReturnsAsync(model);
         
-        Assert.Equal(expectedMessage, actualMessage);
+        var result = await _handler.Handle(CommandTokenCollection.Empty);
+
+        Assert.True(result.TryPickT0(out var reply, out _));
+        Assert.Equal(expectedMessage, reply.Text);
     }
 }

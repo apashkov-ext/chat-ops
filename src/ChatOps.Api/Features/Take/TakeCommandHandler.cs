@@ -1,6 +1,6 @@
 ﻿using ChatOps.Api.Integrations.Telegram.Core;
 
-namespace ChatOps.Api.Features.Env.Take;
+namespace ChatOps.Api.Features.Take;
 
 internal sealed class TakeCommandHandler : ITelegramCommandHandler
 {

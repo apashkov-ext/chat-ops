@@ -3,7 +3,7 @@ using ChatOps.App.Ports;
 using ChatOps.App.UseCases.ListResources;
 using ChatOps.Infra.Adapters.InMemory;
 
-namespace ChatOps.Api.Features.Env.List;
+namespace ChatOps.Api.Features.List;
 
 internal static class Module
 {

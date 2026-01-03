@@ -1,6 +1,4 @@
-﻿using ChatOps.Api.Features.TelegramMessageHandler;
-using ChatOps.Api.Features.TelegramMessageHandler.Handling;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Telegram.Bot.Polling;
 
 namespace ChatOps.Api.Integrations.Telegram;

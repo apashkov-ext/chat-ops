@@ -4,7 +4,7 @@ using ChatOps.Api.Integrations.Telegram.Core;
 using ChatOps.App.Core.Models;
 using ChatOps.App.UseCases.ListResources;
 
-namespace ChatOps.Api.Features.Env.List;
+namespace ChatOps.Api.Features.List;
 
 internal sealed class ListCommandHandler : ITelegramCommandHandler
 {
