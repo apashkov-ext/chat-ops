@@ -21,8 +21,8 @@ public class HelpCommandHandlerTests
                                        <b>Доступные команды</b>
 
                                         <code>list</code>
-                                        <code>take dev1 [branch]</code>
-                                        <code>release dev1</code>
+                                        <code>take &lt;env&gt; [branch]</code>
+                                        <code>release &lt;env&gt;</code>
                                        """;
         
         var result = await _handler.Handle(CommandTokenCollection.Empty);
