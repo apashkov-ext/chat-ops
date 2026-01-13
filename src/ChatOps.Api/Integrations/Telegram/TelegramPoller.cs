@@ -41,6 +41,7 @@ internal sealed class TelegramPoller : BackgroundService
             user.Username,
             user.Id);
 
+        _logger.LogInformation("Start receiver");
         var receiverOptions = new ReceiverOptions
         {
             AllowedUpdates =

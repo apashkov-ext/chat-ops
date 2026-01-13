@@ -1,31 +1,33 @@
 ﻿namespace ChatOps.Api.Integrations.Telegram.Core;
 
-internal sealed class CommandTokenCollection
+internal sealed class TelegramCommand
 {
     private const char _separator = ' ';
     private readonly string _stringRepresentation;
 
+    public TelegramUser User { get; }
     public IReadOnlyList<string> Tokens { get; }
-    public static CommandTokenCollection Empty { get; } = new ([]);
 
-    private CommandTokenCollection(IEnumerable<string> tokens)
+    private TelegramCommand(TelegramUser user, IEnumerable<string> tokens)
     {
+        User = user;
         Tokens = [..tokens];
-        _stringRepresentation = string.Join(_separator, [..Tokens]);
+        _stringRepresentation = string.Join(_separator, [$"@{user}: ", ..Tokens]);
     }
     
-    public static CommandTokenCollection Parse(string input)
+    public static TelegramCommand Parse(TelegramUser user, string input)
     {
         if (string.IsNullOrWhiteSpace(input))
         {
-            return new CommandTokenCollection([]);
+            return new TelegramCommand(user, []);
         }
 
         var tokens = input.Split(_separator, 
             StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        return new CommandTokenCollection(tokens);
+        return new TelegramCommand(user, tokens);
     }
 
+    public static TelegramCommand Empty(TelegramUser user) => new(user, []);
 
     public override string ToString() => _stringRepresentation;
 }

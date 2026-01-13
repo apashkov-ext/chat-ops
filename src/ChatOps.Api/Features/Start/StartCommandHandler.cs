@@ -2,15 +2,26 @@
 
 namespace ChatOps.Api.Features.Start;
 
-internal sealed class StartCommandHandler : ITelegramCommandHandler
+internal sealed class StartCommandHandler : ITelegramCommandHandler, ICommandInfo
 {
-    public bool CanHandle(CommandTokenCollection collection)
+    public string Command => "start";
+    public string Description => "Поздороваться";
+
+    public bool CanHandle(TelegramCommand command)
     {
-        return collection.Tokens is ["/start"];
+        return command.Tokens is ["start"];
     }
 
-    public async Task<TgHandlerResult> Handle(CommandTokenCollection collection, CancellationToken ct = default)
+    public async Task<TgHandlerResult> Handle(TelegramCommand command, CancellationToken ct = default)
     {
-        return new TelegramReply("Будем знакомы");
+        const string message = """
+                                       Привет. 
+                                       Меня зовут Антонио, я - ChatOps.
+                                       Давай накатывать вместе!
+                                       
+                                       Чтобы узнать, что я умею, напиши <code>/help</code>
+                                       """;
+        
+        return new TelegramReply(message);
     }
 }

@@ -2,8 +2,14 @@
 
 internal interface ITelegramCommandHandler
 {
-    bool CanHandle(CommandTokenCollection collection);
-    Task<TgHandlerResult> Handle(CommandTokenCollection collection, CancellationToken ct = default);
+    bool CanHandle(TelegramCommand collection);
+    Task<TgHandlerResult> Handle(TelegramCommand collection, CancellationToken ct = default);
+}
+
+internal interface ICommandInfo
+{
+    string Command { get; }
+    string Description { get; }
 }
 
 internal sealed record TelegramReply(string Text)
@@ -12,4 +18,3 @@ internal sealed record TelegramReply(string Text)
 }
 internal sealed record TelegramHandlerFailure(string Error);
 internal sealed record UnknownCommand;
-internal sealed record MissingRequiredArgument(string ArgumentPattern);

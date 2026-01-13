@@ -3,22 +3,40 @@ using ChatOps.Api.Integrations.Telegram.Core;
 
 namespace ChatOps.Api.Features.Help;
 
-internal sealed class HelpCommandHandler : ITelegramCommandHandler
+internal sealed class HelpCommandHandler : ITelegramCommandHandler, ICommandInfo
 {
-    public bool CanHandle(CommandTokenCollection collection)
+    private readonly ICommandInfo[] _infos;
+    public string Command => "help";
+    public string Description => "Показать справку";
+
+    public HelpCommandHandler(IEnumerable<ICommandInfo> infos)
     {
-        return collection.Tokens is ["/help"];
+        _infos = infos.Append(this).ToArray();
     }
 
-    public async Task<TgHandlerResult> Handle(CommandTokenCollection collection, CancellationToken ct = default)
+    public bool CanHandle(TelegramCommand collection)
     {
-        var help = $"""
-                    {TgHtml.B("Доступные команды")}
+        return collection.Tokens is ["help"];
+    }
 
-                     {TgHtml.Code("list")}
-                     {TgHtml.Code("take", "<env>", "[branch]")}
-                     {TgHtml.Code("release", "<env>")}
+    public async Task<TgHandlerResult> Handle(TelegramCommand collection, CancellationToken ct = default)
+    {
+        var lines = _infos.Select(BuildInfo);
+        var separator = Environment.NewLine + Environment.NewLine;
+        var help = $"""
+                    {TgHtml.B("Доступные команды:")}
+                    
+                    {string.Join(separator, lines)}
                     """;
         return new TelegramReply(help);
+    }
+
+    private static string BuildInfo(ICommandInfo info)
+    {
+        var text = $"""
+                     {TgHtml.B(info.Command)}
+                     {TgHtml.Esc(info.Description)}
+                    """;
+        return text;
     }
 }

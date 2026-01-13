@@ -2,36 +2,59 @@
 using ChatOps.Api.Integrations.Telegram;
 using ChatOps.Api.Integrations.Telegram.Core;
 using ChatOps.App.Core.Models;
-using ChatOps.App.UseCases.ListResources;
+using ChatOps.App.Features.List;
 
 namespace ChatOps.Api.Features.List;
 
-internal sealed class ListCommandHandler : ITelegramCommandHandler
+internal sealed class ListCommandHandler : ITelegramCommandHandler, ICommandInfo
 {
     private readonly IListResourcesUseCase _listResourcesUseCase;
+    private readonly IUsersCache _usersStore;
 
-    public ListCommandHandler(IListResourcesUseCase listResourcesUseCase)
+    public ListCommandHandler(IListResourcesUseCase listResourcesUseCase, IUsersCache usersStore)
     {
         _listResourcesUseCase = listResourcesUseCase;
+        _usersStore = usersStore;
     }
-    
-    public bool CanHandle(CommandTokenCollection collection)
+
+    public string Command => "list";
+    public string Description => "Вывести список ресурсов";
+
+    public bool CanHandle(TelegramCommand collection)
     {
         return collection.Tokens is ["list"];
     }
 
-    public async Task<TgHandlerResult> Handle(CommandTokenCollection tokens, CancellationToken ct = default)
+    public async Task<TgHandlerResult> Handle(TelegramCommand tokens, CancellationToken ct = default)
     {
-        var response = await _listResourcesUseCase.Execute(ct);
-        var list = BuildList(response);
+        var resources = await _listResourcesUseCase.Execute(ct);
+        
+        var pairs = GetPairs(resources).ToArray();
+        var list = BuildList(pairs);
+        
         return new TelegramReply(list);
     }
-    
-    private static string BuildList(IReadOnlyList<Resource> model)
+
+    private IEnumerable<ResourceHolderPair> GetPairs(IReadOnlyList<Resource> resources)
     {
-        var resources = model.Count == 0 
+        foreach (var resource in resources)
+        {
+            TelegramUser? holder = null;
+            if (resource.Holder != null)
+            {
+                var id = long.Parse(resource.Holder.Value);
+                holder = _usersStore.Find(id);
+            }
+            
+            yield return new ResourceHolderPair(resource, holder);
+        }
+    }
+    
+    private static string BuildList(ResourceHolderPair[] pairs)
+    {
+        var resources = pairs.Length == 0 
             ? ["[пусто]"] 
-            : model.Select(Stringify).Select((el, idx) => $" {idx + 1}. {el}");
+            : pairs.Select(Stringify).Select((el, idx) => $" {idx + 1}. {el}");
         
         return
             $"""
@@ -42,12 +65,12 @@ internal sealed class ListCommandHandler : ITelegramCommandHandler
             ;
     }
     
-    private static string Stringify(Resource resource)
+    private static string Stringify(ResourceHolderPair pair)
     {
-        var sb = new StringBuilder(resource.Name);
+        var sb = new StringBuilder(pair.Resource.Id.Value);
         sb.Append(", ");
 
-        switch (resource.State)
+        switch (pair.Resource.State)
         {
             case ResourceState.Free:
                 sb.Append("свободен");
@@ -56,7 +79,7 @@ internal sealed class ListCommandHandler : ITelegramCommandHandler
             case ResourceState.Reserved:
                 sb.Append("занят ");
 
-                sb.Append(resource.Holder ?? "неизвестно кем");
+                sb.Append(pair.Holder?.GetMention() ?? "неизвестно кем");
                 break;
             
             default:
@@ -66,4 +89,6 @@ internal sealed class ListCommandHandler : ITelegramCommandHandler
 
         return sb.ToString();
     }
+    
+    private record ResourceHolderPair(Resource Resource, TelegramUser? Holder);
 }

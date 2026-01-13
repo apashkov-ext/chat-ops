@@ -1,7 +1,7 @@
 ﻿using ChatOps.App.Core.Models;
-using ChatOps.App.Ports;
+using ChatOps.App.SharedPorts;
 
-namespace ChatOps.App.UseCases.ListResources;
+namespace ChatOps.App.Features.List;
 
 public interface IListResourcesUseCase
 {

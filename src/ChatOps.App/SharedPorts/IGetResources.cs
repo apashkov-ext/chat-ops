@@ -1,6 +1,6 @@
 ﻿using ChatOps.App.Core.Models;
 
-namespace ChatOps.App.Ports;
+namespace ChatOps.App.SharedPorts;
 
 public interface IGetResources
 {
