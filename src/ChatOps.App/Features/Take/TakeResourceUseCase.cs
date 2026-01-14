@@ -6,7 +6,7 @@ namespace ChatOps.App.Features.Take;
 public interface ITakeResourceUseCase
 {
     Task<TakeResourceResult> Execute(
-        HolderId holderId,
+        HolderId holder,
         ResourceId resourceId, 
         CancellationToken ct = default);
 }
@@ -16,14 +16,15 @@ public sealed class TakeResourceUseCase : ITakeResourceUseCase
     private readonly IFindResourceById _findResourceById;
     private readonly IUpdateResource _updateResource;
 
-    public TakeResourceUseCase(IFindResourceById findResourceById, IUpdateResource updateResource)
+    public TakeResourceUseCase(IFindResourceById findResourceById, 
+        IUpdateResource updateResource)
     {
         _findResourceById = findResourceById;
         _updateResource = updateResource;
     }
     
     public async Task<TakeResourceResult> Execute(
-        HolderId holderId, 
+        HolderId holder, 
         ResourceId resourceId,
         CancellationToken ct = default)
     {
@@ -33,15 +34,21 @@ public sealed class TakeResourceUseCase : ITakeResourceUseCase
             return new TakeResourceNotFound();
         }
 
-        if (resource.State == ResourceState.Reserved 
-            && resource.Holder != null && resource.Holder != holderId)
+        if (ResourceReservedByAnotherUser(resource, holder))
         {
-            return new TakeResourceAlreadyReserved(resource.Holder);
+            return new TakeResourceInUse(resource.Holder!);
         }
         
-        resource.Reserve(holderId);
+        resource.Reserve(holder);
         await _updateResource.Execute(resource, ct);
         
         return new TakeResourceSuccess();
+    }
+    
+    private static bool ResourceReservedByAnotherUser(Resource resource, HolderId currentHolder)
+    {
+        return 
+            resource.State == ResourceState.Reserved 
+            && resource.Holder != null && resource.Holder != currentHolder;
     }
 }

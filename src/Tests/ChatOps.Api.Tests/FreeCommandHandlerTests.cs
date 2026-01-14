@@ -12,6 +12,8 @@ public class FreeCommandHandlerTests
     private readonly TelegramUser _user;
     private readonly FreeCommandHandler _handler;
     private readonly Mock<IFreeResourceUseCase> _freeResourceUseCase;
+    private readonly Mock<IUsersCache> _cache;
+
     
     public FreeCommandHandlerTests()
     {
@@ -26,6 +28,9 @@ public class FreeCommandHandlerTests
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new FreeResourceSuccess());
         mocker.Use(_freeResourceUseCase);
+        
+        _cache = new Mock<IUsersCache>();
+        mocker.Use(_cache);
         
         _handler = mocker.CreateInstance<FreeCommandHandler>();
     }
@@ -107,7 +112,57 @@ public class FreeCommandHandlerTests
         var result = await _handler.Handle(cmd);
         
         Assert.True(result.TryPickT0(out var reply, out _));
-        Assert.Equal("reply", reply.Text?.Text);
+        Assert.Equal("✅ Ресурс 'resName' освобожден", reply.Text?.Text);
+    }       
+    
+    [Fact]
+    public async Task Handle_NotFoundShouldBeMappedToReply()
+    {
+        _freeResourceUseCase.Setup(x => x.Execute(
+                It.IsAny<HolderId>(), 
+                It.IsAny<ResourceId>(), 
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FreeResourceNotFound());
+        
+        var cmd = TelegramCommand.Parse(_user, "free resName");
+        var result = await _handler.Handle(cmd);
+        
+        Assert.True(result.TryPickT0(out var reply, out _));
+        Assert.Equal("⚠️ Ресурс не найден", reply.Text?.Text);
+    }     
+    
+    [Fact]
+    public async Task Handle_ReservedAndUserNotCached_ShouldBeMappedToReply()
+    {
+        _freeResourceUseCase.Setup(x => x.Execute(
+                It.IsAny<HolderId>(), 
+                It.IsAny<ResourceId>(), 
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FreeResourceInUse(new HolderId("999")));
+        
+        var cmd = TelegramCommand.Parse(_user, "free resName");
+        var result = await _handler.Handle(cmd);
+        
+        Assert.True(result.TryPickT0(out var reply, out _));
+        Assert.Equal("⚠️ Ресурс зарезервирован для <a href=\"tg://user?id=999\">Личности без имени</a>", reply.Text?.Text);
+    }        
+    
+    [Fact]
+    public async Task Handle_ReservedAndUserCached_ShouldBeMappedToReply()
+    {
+        _freeResourceUseCase.Setup(x => x.Execute(
+                It.IsAny<HolderId>(), 
+                It.IsAny<ResourceId>(), 
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FreeResourceInUse(new HolderId("999")));
+        
+        _cache.Setup(x => x.Find(It.IsAny<long>())).Returns(new TelegramUser(999, "Имя", null, "username"));
+        
+        var cmd = TelegramCommand.Parse(_user, "free resName");
+        var result = await _handler.Handle(cmd);
+        
+        Assert.True(result.TryPickT0(out var reply, out _));
+        Assert.Equal("⚠️ Ресурс зарезервирован для <a href=\"tg://user?id=999\">@username</a>", reply.Text?.Text);
     }    
     
     [Fact]

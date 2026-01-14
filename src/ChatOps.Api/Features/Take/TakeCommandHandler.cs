@@ -40,7 +40,7 @@ internal sealed class TakeCommandHandler : ITelegramCommandHandler, ICommandInfo
             success =>
             {
                 var mention = GetMentionForHolder(holder, "Личности без имени");
-                var msg = $"✅ Ресурс '{resourceId}' успешно зарезервирован для {mention}";
+                var msg = $"✅ Ресурс '{resourceId}' зарезервирован для {mention}";
                 var txt = new TelegramText(msg);
                 var img = new TelegramImage("donotdisturb.jpg");
                 return Task.FromResult<TgHandlerResult>(new TelegramReply(txt, img));
@@ -50,9 +50,9 @@ internal sealed class TakeCommandHandler : ITelegramCommandHandler, ICommandInfo
                 var txt = new TelegramText("⚠️ Ресурс не найден");
                 return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));
             },
-            reserved =>
+            inUse =>
             {
-                var mention = GetMentionForHolder(reserved.HolderId, "Личности без имени");
+                var mention = GetMentionForHolder(inUse.HolderId, "Личности без имени");
                 var msg = $"⚠️ Ресурс уже зарезервирован для {mention}";
                 var txt = new TelegramText(msg);
                 return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));

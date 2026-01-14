@@ -57,6 +57,8 @@ internal sealed class TelegramChatApi : ITelegramChatApi
         _logger.LogDebug("Sending image to chat");
         try
         {
+            // TODO: можно закэшировать fileId, чтобы не слать в чат заново (не грузить по сети) одну и ту же картинку.
+            // Погуглить про это.
             return await _botClient.SendPhoto(chatId: chatId,
                 InputFile.FromStream(image),
                 parseMode: ParseMode.Html,
