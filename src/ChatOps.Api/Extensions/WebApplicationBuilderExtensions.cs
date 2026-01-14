@@ -3,6 +3,7 @@ using ChatOps.Api.Features.Help;
 using ChatOps.Api.Features.List;
 using ChatOps.Api.Features.Start;
 using ChatOps.Api.Features.Take;
+using ChatOps.Api.Integrations.FileStorage;
 using ChatOps.Api.Integrations.Telegram;
 using ChatOps.Infra.Integrations.InMemoryDatabase;
 using ChatOps.Infra.SharedAdapters;
@@ -17,6 +18,7 @@ internal static class WebApplicationBuilderExtensions
         builder.AddInMemoryUsersCache();
         builder.Services.AddInMemoryDatabase();
         builder.Services.AddSharedPorts();
+        builder.Services.AddImageDatabase();
         
         builder.AddStartFeature();
         builder.AddHelpFeature();

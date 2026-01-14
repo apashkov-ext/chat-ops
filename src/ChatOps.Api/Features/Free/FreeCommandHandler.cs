@@ -28,12 +28,12 @@ internal sealed class FreeCommandHandler : ITelegramCommandHandler, ICommandInfo
             return new TelegramHandlerFailure("Invalid command syntax");
         }
         
-        var holder = new HolderId(command.User.Id.ToString());
-        var resourceName = command.Tokens[1];
+        var holderId = new HolderId(command.User.Id.ToString());
+        var resourceId = new ResourceId(tokens[1]);
         
-        var freeResource = await _freeResourceUseCase.Execute(holder, resourceName, ct);
+        var freeResource = await _freeResourceUseCase.Execute(holderId, resourceId, ct);
         return await freeResource.Match<Task<TgHandlerResult>>(
-            success => Task.FromResult<TgHandlerResult>(new TelegramReply(success.Reply)), 
+            success => Task.FromResult<TgHandlerResult>(new TelegramReply()), 
             failure => Task.FromResult<TgHandlerResult>(new TelegramHandlerFailure(failure.Error))
         );
     }

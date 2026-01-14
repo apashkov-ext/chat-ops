@@ -12,9 +12,31 @@ internal interface ICommandInfo
     string Description { get; }
 }
 
-internal sealed record TelegramReply(string Text)
+internal record TelegramReply
 {
-    public static implicit operator TelegramReply(string text) => new(text);
+    public TelegramImage? Image { get; }
+    public TelegramText? Text { get; }
+
+    public TelegramReply() { }
+
+    public TelegramReply(TelegramText text)
+    {
+        Text = text;
+    }    
+    
+    public TelegramReply(TelegramImage image)
+    {
+        Image = image;
+    }    
+    
+    public TelegramReply(TelegramText text, TelegramImage image)
+    {
+        Text = text;
+        Image = image;
+    }
 }
 internal sealed record TelegramHandlerFailure(string Error);
 internal sealed record UnknownCommand;
+
+internal sealed record TelegramText(string Text);
+internal sealed record TelegramImage(string ImageId);

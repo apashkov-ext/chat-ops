@@ -24,11 +24,12 @@ internal sealed class HelpCommandHandler : ITelegramCommandHandler, ICommandInfo
         var lines = _infos.Select(BuildInfo);
         var separator = Environment.NewLine + Environment.NewLine;
         var help = $"""
-                    {TgHtml.B("Доступные команды:")}
+                    ℹ️ {TgHtml.B("Доступные команды:")}
                     
                     {string.Join(separator, lines)}
                     """;
-        return new TelegramReply(help);
+        var text = new TelegramText(help);
+        return new TelegramReply(text);
     }
 
     private static string BuildInfo(ICommandInfo info)

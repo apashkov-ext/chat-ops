@@ -1,5 +1,4 @@
-﻿using ChatOps.Api.Features.Free;
-using ChatOps.Api.Features.Help;
+﻿using ChatOps.Api.Features.Help;
 using ChatOps.Api.Integrations.Telegram.Core;
 using Moq;
 using Moq.AutoMock;
@@ -22,7 +21,7 @@ public class HelpCommandHandlerTests
     public async Task ShouldReturnSelfHelpMessage()
     {
         const string expectedMessage = """
-                                       <b>Доступные команды:</b>
+                                       ℹ️ <b>Доступные команды:</b>
 
                                         <b>help</b>
                                         Показать справку
@@ -32,14 +31,14 @@ public class HelpCommandHandlerTests
         var result = await handler.Handle(TelegramCommand.Empty(new TelegramUser(888, "user")));
         
         Assert.True(result.TryPickT0(out var reply, out _));
-        Assert.Equal(expectedMessage, reply.Text);
+        Assert.Equal(expectedMessage, reply.Text?.Text);
     }
     
     [Fact]
     public async Task ShouldConsumeCommandsAndReturnHelpMessage()
     {
         const string expectedMessage = """
-                                       <b>Доступные команды:</b>
+                                       ℹ️ <b>Доступные команды:</b>
                                        
                                         <b>start</b>
                                         Поздороваться
@@ -57,6 +56,6 @@ public class HelpCommandHandlerTests
         var result = await handler.Handle(TelegramCommand.Empty(new TelegramUser(888, "user")));
         
         Assert.True(result.TryPickT0(out var reply, out _));
-        Assert.Equal(expectedMessage, reply.Text);
+        Assert.Equal(expectedMessage, reply.Text?.Text);
     }
 }

@@ -12,6 +12,7 @@ public class TakeCommandHandlerTests
     private readonly TelegramUser _user;
     private readonly TakeCommandHandler _handler;
     private readonly Mock<ITakeResourceUseCase> _takeResourceUseCase;
+    private readonly Mock<IUsersCache> _cache;
     
     public TakeCommandHandlerTests()
     {
@@ -22,10 +23,13 @@ public class TakeCommandHandlerTests
         _takeResourceUseCase = new Mock<ITakeResourceUseCase>();
         _takeResourceUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
-                It.IsAny<string>(), 
+                It.IsAny<ResourceId>(), 
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new TakeResourceSuccess("reply"));
+            .ReturnsAsync(new TakeResourceSuccess());
         mocker.Use(_takeResourceUseCase);
+
+        _cache = new Mock<IUsersCache>();
+        mocker.Use(_cache);
         
         _handler = mocker.CreateInstance<TakeCommandHandler>();
     }
@@ -68,7 +72,7 @@ public class TakeCommandHandlerTests
         
         _takeResourceUseCase.Verify(x => x.Execute(
             It.IsAny<HolderId>(),
-            It.IsAny<string>(),
+            It.IsAny<ResourceId>(),
             It.IsAny<CancellationToken>()), Times.Never);
     }
     
@@ -90,7 +94,7 @@ public class TakeCommandHandlerTests
         
         _takeResourceUseCase.Verify(x => x.Execute(
             It.Is<HolderId>(h => h.Value == _user.Id.ToString()),
-            It.Is<string>(r => r == "resName"),
+            It.Is<ResourceId>(r => r == new ResourceId("resName")),
             It.IsAny<CancellationToken>()), Times.Once);
     }    
     
@@ -99,23 +103,73 @@ public class TakeCommandHandlerTests
     {
         _takeResourceUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
-                It.IsAny<string>(), 
+                It.IsAny<ResourceId>(), 
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new TakeResourceSuccess("reply"));
+            .ReturnsAsync(new TakeResourceSuccess());
         
         var cmd = TelegramCommand.Parse(_user, "take resName");
         var result = await _handler.Handle(cmd);
         
         Assert.True(result.TryPickT0(out var reply, out _));
-        Assert.Equal("reply", reply.Text);
+        Assert.Equal("✅ Ресурс 'resName' успешно зарезервирован для <a href=\"tg://user?id=888\">Личности без имени</a>", reply.Text?.Text);
     }    
+    
+    [Fact]
+    public async Task Handle_NotFoundShouldBeMappedToReply()
+    {
+        _takeResourceUseCase.Setup(x => x.Execute(
+                It.IsAny<HolderId>(), 
+                It.IsAny<ResourceId>(), 
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TakeResourceNotFound());
+        
+        var cmd = TelegramCommand.Parse(_user, "take resName");
+        var result = await _handler.Handle(cmd);
+        
+        Assert.True(result.TryPickT0(out var reply, out _));
+        Assert.Equal("⚠️ Ресурс не найден", reply.Text?.Text);
+    }  
+    
+    [Fact]
+    public async Task Handle_ReservedAndUserNotCached_ShouldBeMappedToReply()
+    {
+        _takeResourceUseCase.Setup(x => x.Execute(
+                It.IsAny<HolderId>(), 
+                It.IsAny<ResourceId>(), 
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TakeResourceAlreadyReserved(new HolderId("999")));
+        
+        var cmd = TelegramCommand.Parse(_user, "take resName");
+        var result = await _handler.Handle(cmd);
+        
+        Assert.True(result.TryPickT0(out var reply, out _));
+        Assert.Equal("⚠️ Ресурс уже зарезервирован для <a href=\"tg://user?id=999\">Личности без имени</a>", reply.Text?.Text);
+    }      
+    
+    [Fact]
+    public async Task Handle_ReservedAndUserCached_ShouldBeMappedToReply()
+    {
+        _takeResourceUseCase.Setup(x => x.Execute(
+                It.IsAny<HolderId>(), 
+                It.IsAny<ResourceId>(), 
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TakeResourceAlreadyReserved(new HolderId("999")));
+
+        _cache.Setup(x => x.Find(It.IsAny<long>())).Returns(new TelegramUser(999, "Имя", null, "username"));
+        
+        var cmd = TelegramCommand.Parse(_user, "take resName");
+        var result = await _handler.Handle(cmd);
+        
+        Assert.True(result.TryPickT0(out var reply, out _));
+        Assert.Equal("⚠️ Ресурс уже зарезервирован для <a href=\"tg://user?id=999\">@username</a>", reply.Text?.Text);
+    }  
     
     [Fact]
     public async Task Handle_FailureShouldBeMappedToFailure()
     {
         _takeResourceUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
-                It.IsAny<string>(), 
+                It.IsAny<ResourceId>(), 
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new TakeResourceFailure("error"));
         

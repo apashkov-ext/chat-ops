@@ -16,13 +16,14 @@ internal sealed class StartCommandHandler : ITelegramCommandHandler, ICommandInf
     public async Task<TgHandlerResult> Handle(TelegramCommand command, CancellationToken ct = default)
     {
         const string message = $"""
-                                       Привет. 
+                                       👋 Привет. 
                                        Меня зовут Антонио, я - ChatOps.
                                        Давай накатывать вместе!
                                        
                                        Чтобы узнать, что я умею, напиши <code>{Constants.CommandPrefix} help</code>
                                        """;
         
-        return new TelegramReply(message);
+        var text = new TelegramText(message);
+        return new TelegramReply(text);
     }
 }

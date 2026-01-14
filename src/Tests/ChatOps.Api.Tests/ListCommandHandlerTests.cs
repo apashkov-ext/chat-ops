@@ -41,7 +41,7 @@ public class ListCommandHandlerTests
         var result = await _handler.Handle(TelegramCommand.Empty(new TelegramUser(888, "user")));
         
         Assert.True(result.TryPickT0(out var reply, out _));
-        Assert.Equal(expectedMessage, reply.Text);
+        Assert.Equal(expectedMessage, reply.Text?.Text);
     }    
     
     [Fact]
@@ -68,6 +68,6 @@ public class ListCommandHandlerTests
         var result = await _handler.Handle(TelegramCommand.Empty(new TelegramUser(999, "Имя", null, "user2")));
 
         Assert.True(result.TryPickT0(out var reply, out _));
-        Assert.Equal(expectedMessage, reply.Text);
+        Assert.Equal(expectedMessage, reply.Text?.Text);
     }
 }

@@ -15,6 +15,12 @@ internal sealed record TelegramUser(
         var mention = $"<a href=\"tg://user?id={Id}\">{displayName}</a>";
         return mention;
     }
+
+    public static string GetMention(long userId, string displayName)
+    {
+        var mention = $"<a href=\"tg://user?id={userId}\">{displayName}</a>";
+        return mention;
+    }
     
     public override string ToString()
     {

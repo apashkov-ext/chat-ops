@@ -22,9 +22,9 @@ public class FreeCommandHandlerTests
         _freeResourceUseCase = new Mock<IFreeResourceUseCase>();
         _freeResourceUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
-                It.IsAny<string>(), 
+                It.IsAny<ResourceId>(), 
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new FreeResourceSuccess("reply"));
+            .ReturnsAsync(new FreeResourceSuccess());
         mocker.Use(_freeResourceUseCase);
         
         _handler = mocker.CreateInstance<FreeCommandHandler>();
@@ -68,7 +68,7 @@ public class FreeCommandHandlerTests
         
         _freeResourceUseCase.Verify(x => x.Execute(
             It.IsAny<HolderId>(),
-            It.IsAny<string>(),
+            It.IsAny<ResourceId>(),
             It.IsAny<CancellationToken>()), Times.Never);
     }
     
@@ -90,7 +90,7 @@ public class FreeCommandHandlerTests
         
         _freeResourceUseCase.Verify(x => x.Execute(
             It.Is<HolderId>(h => h.Value == _user.Id.ToString()),
-            It.Is<string>(r => r == "resName"),
+            It.Is<ResourceId>(r => r == new ResourceId("resName")),
             It.IsAny<CancellationToken>()), Times.Once);
     }    
     
@@ -99,15 +99,15 @@ public class FreeCommandHandlerTests
     {
         _freeResourceUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
-                It.IsAny<string>(), 
+                It.IsAny<ResourceId>(), 
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new FreeResourceSuccess("reply"));
+            .ReturnsAsync(new FreeResourceSuccess());
         
         var cmd = TelegramCommand.Parse(_user, "free resName");
         var result = await _handler.Handle(cmd);
         
         Assert.True(result.TryPickT0(out var reply, out _));
-        Assert.Equal("reply", reply.Text);
+        Assert.Equal("reply", reply.Text?.Text);
     }    
     
     [Fact]
@@ -115,7 +115,7 @@ public class FreeCommandHandlerTests
     {
         _freeResourceUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
-                It.IsAny<string>(), 
+                It.IsAny<ResourceId>(), 
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new FreeResourceFailure("error"));
         

@@ -9,5 +9,6 @@ public static class Module
     {
         services.AddTransient<IGetResources, InMemoryGetResources>();
         services.AddTransient<IFindResourceById, InMemoryFindResourceById>();
+        services.AddTransient<IUpdateResource, InMemoryUpdateResource>();
     }    
 }

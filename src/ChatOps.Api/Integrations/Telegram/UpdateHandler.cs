@@ -1,4 +1,4 @@
-using ChatOps.Api.Features;
+using ChatOps.Api.Integrations.FileStorage;
 using ChatOps.Api.Integrations.Telegram.Core;
 using Microsoft.Extensions.Options;
 using Telegram.Bot.Polling;
@@ -11,18 +11,21 @@ internal sealed class UpdateHandler : IUpdateHandler
     private readonly ITelegramCommandHandler[] _handlers;
     private readonly IUsersCache _usersStore;
     private readonly ITelegramChatApi _chatApi;
+    private readonly IImageResolver _imageResolver;
     private readonly ILogger<UpdateHandler> _logger;
 
     public UpdateHandler(IEnumerable<ITelegramCommandHandler> handlers,
         IUsersCache usersStore,
         ITelegramChatApi chatApi,
         IOptions<TelegramConfig> config,
+        IImageResolver imageResolver,
         ILogger<UpdateHandler> logger)
     {
         _allowedChatIds = config.Value.GetAllowedChatIds();
         _handlers = handlers.ToArray();
         _usersStore = usersStore;
         _chatApi = chatApi;
+        _imageResolver = imageResolver;
         _logger = logger;
     }
 
@@ -98,7 +101,7 @@ internal sealed class UpdateHandler : IUpdateHandler
             _logger.LogWarning("Unknown command '{Command:l}'", message.Text);
             await _chatApi.SendHtmlMessage(
                 message.Chat.Id,
-                "Неизвестная команда",
+                "⚠️ Неизвестная команда",
                 ct);
             return;
         }
@@ -108,19 +111,32 @@ internal sealed class UpdateHandler : IUpdateHandler
             async reply =>
             {
                 _logger.LogInformation("Text command handling successfully");
-                await _chatApi.SendHtmlMessage(message.Chat.Id, reply.Text, ct);
+                
+                if (reply.Text is not null)
+                {
+                    await _chatApi.SendHtmlMessage(message.Chat.Id, reply.Text.Text, ct);
+                }
+
+                if (reply.Image is not null)
+                {
+                    await using var imageStream = _imageResolver.ResolveById(reply.Image.ImageId);
+                    await _chatApi.SendImage(message.Chat.Id, imageStream, ct);
+                }
             },
             async failure =>
             {
                 _logger.LogWarning("Text command handling failure: '{ErrorMessage:l}'", failure.Error);
-                await _chatApi.SendHtmlMessage(message.Chat.Id, failure.Error, ct);
+                await _chatApi.SendHtmlMessage(
+                    message.Chat.Id, 
+                    $"⛔ {failure.Error}", 
+                    ct);
             },
             async _ =>
             {
                 _logger.LogWarning("Unknown command '{Command:l}'", message.Text);
                 await _chatApi.SendHtmlMessage(
                     message.Chat.Id,
-                    "Неизвестная команда",
+                    "⚠️ Неизвестная команда",
                     ct);
             }
         );

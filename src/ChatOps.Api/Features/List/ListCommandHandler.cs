@@ -32,7 +32,8 @@ internal sealed class ListCommandHandler : ITelegramCommandHandler, ICommandInfo
         var pairs = GetPairs(resources).ToArray();
         var list = BuildList(pairs);
         
-        return new TelegramReply(list);
+        var text = new TelegramText(list);
+        return new TelegramReply(text);
     }
 
     private IEnumerable<ResourceHolderPair> GetPairs(IReadOnlyList<Resource> resources)

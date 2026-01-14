@@ -1,35 +1,47 @@
 ﻿using ChatOps.App.Core.Models;
 using ChatOps.App.SharedPorts;
-using OneOf;
 
 namespace ChatOps.App.Features.Take;
 
 public interface ITakeResourceUseCase
 {
-    Task<OneOf<TakeResourceSuccess, TakeResourceFailure>> Execute(
+    Task<TakeResourceResult> Execute(
         HolderId holderId,
-        string resourceName, 
+        ResourceId resourceId, 
         CancellationToken ct = default);
 }
-
-public sealed record TakeResourceSuccess(string Reply)
-{
-    public static implicit operator TakeResourceSuccess(string reply) => new(reply);
-}
-
-public sealed record TakeResourceFailure(string Error);
 
 public sealed class TakeResourceUseCase : ITakeResourceUseCase
 {
     private readonly IFindResourceById _findResourceById;
+    private readonly IUpdateResource _updateResource;
 
-    public TakeResourceUseCase(IFindResourceById findResourceById)
+    public TakeResourceUseCase(IFindResourceById findResourceById, IUpdateResource updateResource)
     {
         _findResourceById = findResourceById;
+        _updateResource = updateResource;
     }
     
-    public async Task<OneOf<TakeResourceSuccess, TakeResourceFailure>> Execute(HolderId holderId, string resourceName, CancellationToken ct = default)
+    public async Task<TakeResourceResult> Execute(
+        HolderId holderId, 
+        ResourceId resourceId,
+        CancellationToken ct = default)
     {
-        return new TakeResourceFailure("Фича еще не готова");
+        var resource = await _findResourceById.Execute(resourceId, ct);
+        if (resource is null)
+        {
+            return new TakeResourceNotFound();
+        }
+
+        if (resource.State == ResourceState.Reserved 
+            && resource.Holder != null && resource.Holder != holderId)
+        {
+            return new TakeResourceAlreadyReserved(resource.Holder);
+        }
+        
+        resource.Reserve(holderId);
+        await _updateResource.Execute(resource, ct);
+        
+        return new TakeResourceSuccess();
     }
 }

@@ -16,4 +16,10 @@
       <PackageReference Include="OneOf" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Content\donotdisturb.jpg">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

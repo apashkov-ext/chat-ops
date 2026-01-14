@@ -19,7 +19,7 @@ public class StartCommandHandlerTests
     public async Task ShouldReturnHelpMessage()
     {
         const string expectedMessage = $"""
-                                        Привет. 
+                                        👋 Привет. 
                                         Меня зовут Антонио, я - ChatOps.
                                         Давай накатывать вместе!
 
@@ -28,6 +28,6 @@ public class StartCommandHandlerTests
         var result = await _handler.Handle(TelegramCommand.Empty(new TelegramUser(888, "user")));
         
         Assert.True(result.TryPickT0(out var reply, out _));
-        Assert.Equal(expectedMessage, reply.Text);
+        Assert.Equal(expectedMessage, reply.Text?.Text);
     }
 }
