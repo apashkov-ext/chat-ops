@@ -1,4 +1,5 @@
-﻿using ChatOps.Api.Integrations.Telegram.Core;
+﻿using ChatOps.Api.Integrations;
+using ChatOps.Api.Integrations.Telegram.Core;
 
 namespace ChatOps.Api.Features.Start;
 
@@ -14,12 +15,12 @@ internal sealed class StartCommandHandler : ITelegramCommandHandler, ICommandInf
 
     public async Task<TgHandlerResult> Handle(TelegramCommand command, CancellationToken ct = default)
     {
-        const string message = """
+        const string message = $"""
                                        Привет. 
                                        Меня зовут Антонио, я - ChatOps.
                                        Давай накатывать вместе!
                                        
-                                       Чтобы узнать, что я умею, напиши <code>/help</code>
+                                       Чтобы узнать, что я умею, напиши <code>{Constants.CommandPrefix} help</code>
                                        """;
         
         return new TelegramReply(message);

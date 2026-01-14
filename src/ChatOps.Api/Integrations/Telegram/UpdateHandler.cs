@@ -69,7 +69,13 @@ internal sealed class UpdateHandler : IUpdateHandler
             _logger.LogDebug("Message.From is null, skipping");
             return;
         }
-
+        
+        var from = message.From;
+        var user = new TelegramUser(from.Id, from.FirstName, from.LastName, from.Username);
+        
+        // запомним юзера для рендера ответа.
+        _usersStore.Set(user);
+        
         var text = message.Text ?? string.Empty;
         if (!IsCommand(text))
         {
@@ -78,12 +84,6 @@ internal sealed class UpdateHandler : IUpdateHandler
         }
 
         text = Clean(text);
-        
-        var from = message.From;
-        var user = new TelegramUser(from.Id, from.FirstName, from.LastName, from.Username);
-        
-        // запомним юзера для рендера ответа.
-        _usersStore.Set(user);
         
         var command = TelegramCommand.Parse(user, text);
         if (command.Tokens.Count == 0)

@@ -1,16 +1,30 @@
-﻿namespace ChatOps.App.Features.Free;
+﻿using ChatOps.App.Core.Models;
+using OneOf;
+
+namespace ChatOps.App.Features.Free;
 
 public interface IFreeResourceUseCase
 {
-    Task<FreeResourceResult> Execute(string name, CancellationToken ct = default);
+    Task<OneOf<FreeResourceSuccess, FreeResourceFailure>> Execute(
+        HolderId holder,
+        string resourceName, 
+        CancellationToken ct = default);
 }
 
-public record FreeResourceResult;
+public sealed record FreeResourceSuccess(string Reply)
+{
+    public static implicit operator FreeResourceSuccess(string reply) => new(reply);
+}
+
+public sealed record FreeResourceFailure(string Error);
 
 public sealed class FreeResourceUseCase : IFreeResourceUseCase
 {
-    public Task<FreeResourceResult> Execute(string name, CancellationToken ct = default)
+    public async Task<OneOf<FreeResourceSuccess, FreeResourceFailure>> Execute(
+        HolderId holder,
+        string resourceName, 
+        CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        return new FreeResourceFailure("Фича еще не готова");
     }
 }

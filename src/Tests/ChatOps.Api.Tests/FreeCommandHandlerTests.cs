@@ -1,0 +1,128 @@
+﻿using ChatOps.Api.Features.Free;
+using ChatOps.Api.Integrations.Telegram.Core;
+using ChatOps.App.Core.Models;
+using ChatOps.App.Features.Free;
+using Moq;
+using Moq.AutoMock;
+
+namespace ChatOps.Api.Tests;
+
+public class FreeCommandHandlerTests
+{
+    private readonly TelegramUser _user;
+    private readonly FreeCommandHandler _handler;
+    private readonly Mock<IFreeResourceUseCase> _freeResourceUseCase;
+    
+    public FreeCommandHandlerTests()
+    {
+        _user = new TelegramUser(888, "user");
+        
+        var mocker = new AutoMocker();
+
+        _freeResourceUseCase = new Mock<IFreeResourceUseCase>();
+        _freeResourceUseCase.Setup(x => x.Execute(
+                It.IsAny<HolderId>(), 
+                It.IsAny<string>(), 
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FreeResourceSuccess("reply"));
+        mocker.Use(_freeResourceUseCase);
+        
+        _handler = mocker.CreateInstance<FreeCommandHandler>();
+    }
+    
+    [Fact]
+    public void CanHandle_EmptyCommand_ShouldReturnFalse()
+    {
+        var cmd = TelegramCommand.Empty(_user);
+        var can = _handler.CanHandle(cmd);
+        
+        Assert.False(can);
+    }
+    
+    [Fact]
+    public void CanHandle_IllegalToken_ShouldReturnFalse()
+    {
+        var cmd = TelegramCommand.Parse(_user, "ThisIsNotAFree3Token");
+        var can = _handler.CanHandle(cmd);
+        
+        Assert.False(can);
+    }
+    
+    [Theory]
+    [InlineData("free")]
+    [InlineData("free arg1")]
+    [InlineData("free arg1 argN")]
+    public void CanHandle_ShouldReturnTrue(string input)
+    {
+        var cmd = TelegramCommand.Parse(_user, input);
+        var can = _handler.CanHandle(cmd);
+        
+        Assert.True(can);
+    }
+
+    [Fact]
+    public async Task Handle_WithoutRequiredArg_ShouldNotInvokeUseCase()
+    {
+        var cmd = TelegramCommand.Parse(_user, "free");
+        _ = await _handler.Handle(cmd);
+        
+        _freeResourceUseCase.Verify(x => x.Execute(
+            It.IsAny<HolderId>(),
+            It.IsAny<string>(),
+            It.IsAny<CancellationToken>()), Times.Never);
+    }
+    
+    [Fact]
+    public async Task Handle_WithoutRequiredArg_ShouldReturnFailure()
+    {
+        var cmd = TelegramCommand.Parse(_user, "free");
+        var result = await _handler.Handle(cmd);
+        
+        Assert.True(result.TryPickT1(out var failure, out _));
+        Assert.Equal("Invalid command syntax", failure.Error);
+    }
+    
+    [Fact]
+    public async Task Handle_ShouldInvokeTakeUseCase()
+    {
+        var cmd = TelegramCommand.Parse(_user, "free resName");
+        _ = await _handler.Handle(cmd);
+        
+        _freeResourceUseCase.Verify(x => x.Execute(
+            It.Is<HolderId>(h => h.Value == _user.Id.ToString()),
+            It.Is<string>(r => r == "resName"),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }    
+    
+    [Fact]
+    public async Task Handle_SuccessShouldBeMappedToReply()
+    {
+        _freeResourceUseCase.Setup(x => x.Execute(
+                It.IsAny<HolderId>(), 
+                It.IsAny<string>(), 
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FreeResourceSuccess("reply"));
+        
+        var cmd = TelegramCommand.Parse(_user, "free resName");
+        var result = await _handler.Handle(cmd);
+        
+        Assert.True(result.TryPickT0(out var reply, out _));
+        Assert.Equal("reply", reply.Text);
+    }    
+    
+    [Fact]
+    public async Task Handle_FailureShouldBeMappedToFailure()
+    {
+        _freeResourceUseCase.Setup(x => x.Execute(
+                It.IsAny<HolderId>(), 
+                It.IsAny<string>(), 
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FreeResourceFailure("error"));
+        
+        var cmd = TelegramCommand.Parse(_user, "free resName");
+        var result = await _handler.Handle(cmd);
+        
+        Assert.True(result.TryPickT1(out var failure, out _));
+        Assert.Equal("error", failure.Error);
+    }
+}

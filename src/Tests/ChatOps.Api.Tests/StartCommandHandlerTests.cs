@@ -1,4 +1,5 @@
 ﻿using ChatOps.Api.Features.Start;
+using ChatOps.Api.Integrations;
 using ChatOps.Api.Integrations.Telegram.Core;
 using Moq.AutoMock;
 
@@ -17,13 +18,13 @@ public class StartCommandHandlerTests
     [Fact]
     public async Task ShouldReturnHelpMessage()
     {
-        const string expectedMessage = """
-                                       Привет. 
-                                       Меня зовут Антонио, я - ChatOps.
-                                       Давай накатывать вместе!
+        const string expectedMessage = $"""
+                                        Привет. 
+                                        Меня зовут Антонио, я - ChatOps.
+                                        Давай накатывать вместе!
 
-                                       Чтобы узнать, что я умею, напиши <code>/help</code>
-                                       """;        
+                                        Чтобы узнать, что я умею, напиши <code>{Constants.CommandPrefix} help</code>
+                                        """;        
         var result = await _handler.Handle(TelegramCommand.Empty(new TelegramUser(888, "user")));
         
         Assert.True(result.TryPickT0(out var reply, out _));

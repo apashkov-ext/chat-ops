@@ -1,4 +1,5 @@
-﻿using ChatOps.Api.Features.Help;
+﻿using ChatOps.Api.Features.Free;
+using ChatOps.Api.Features.Help;
 using ChatOps.Api.Integrations.Telegram.Core;
 using Moq;
 using Moq.AutoMock;
@@ -7,17 +8,14 @@ namespace ChatOps.Api.Tests;
 
 public class HelpCommandHandlerTests
 {
-    private readonly HelpCommandHandler _handler;
+    private readonly AutoMocker _mocker;
     private readonly List<ICommandInfo> _infos;
     
     public HelpCommandHandlerTests()
     {
-        var mocker = new AutoMocker();
-
+        _mocker = new AutoMocker();
         _infos = new List<ICommandInfo>();
-        mocker.Use<IEnumerable<ICommandInfo>>(_infos);
-        
-        _handler = mocker.CreateInstance<HelpCommandHandler>();
+        _mocker.Use<IEnumerable<ICommandInfo>>(_infos);
     }
     
     [Fact]
@@ -30,14 +28,15 @@ public class HelpCommandHandlerTests
                                         Показать справку
                                        """;
         
-        var result = await _handler.Handle(TelegramCommand.Empty(new TelegramUser(888, "user")));
+        var handler = _mocker.CreateInstance<HelpCommandHandler>();
+        var result = await handler.Handle(TelegramCommand.Empty(new TelegramUser(888, "user")));
         
         Assert.True(result.TryPickT0(out var reply, out _));
         Assert.Equal(expectedMessage, reply.Text);
     }
     
     [Fact]
-    public async Task ShouldReturnHelpMessage()
+    public async Task ShouldConsumeCommandsAndReturnHelpMessage()
     {
         const string expectedMessage = """
                                        <b>Доступные команды:</b>
@@ -54,7 +53,8 @@ public class HelpCommandHandlerTests
         infoMock.SetupGet(x => x.Description).Returns("Поздороваться");
         _infos.Add(infoMock.Object);
         
-        var result = await _handler.Handle(TelegramCommand.Empty(new TelegramUser(888, "user")));
+        var handler = _mocker.CreateInstance<HelpCommandHandler>();
+        var result = await handler.Handle(TelegramCommand.Empty(new TelegramUser(888, "user")));
         
         Assert.True(result.TryPickT0(out var reply, out _));
         Assert.Equal(expectedMessage, reply.Text);

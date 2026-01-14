@@ -1,24 +1,23 @@
 ﻿using ChatOps.Api.Integrations.Telegram.Core;
 using ChatOps.App.Core.Models;
-using ChatOps.App.Features.Take;
+using ChatOps.App.Features.Free;
 
-namespace ChatOps.Api.Features.Take;
+namespace ChatOps.Api.Features.Free;
 
-internal sealed class TakeCommandHandler : ITelegramCommandHandler, ICommandInfo
+internal sealed class FreeCommandHandler : ITelegramCommandHandler, ICommandInfo
 {
-    private readonly ITakeResourceUseCase _takeResource;
+    private readonly IFreeResourceUseCase _freeResourceUseCase;
+    public string Command => "free <resource>";
+    public string Description => "Освободить указанный ресурс";
 
-    public TakeCommandHandler(ITakeResourceUseCase takeResource)
+    public FreeCommandHandler(IFreeResourceUseCase freeResourceUseCase)
     {
-        _takeResource = takeResource;
+        _freeResourceUseCase = freeResourceUseCase;
     }
-
-    public string Command => "take <resource>";
-    public string Description => "Занять указанный ресурс";
 
     public bool CanHandle(TelegramCommand command)
     {
-        return command.Tokens.Count is not 0 && command.Tokens[0] == "take";
+        return command.Tokens.Count is not 0 && command.Tokens[0] == "free";
     }
 
     public async Task<TgHandlerResult> Handle(TelegramCommand command, CancellationToken ct = default)
@@ -32,8 +31,8 @@ internal sealed class TakeCommandHandler : ITelegramCommandHandler, ICommandInfo
         var holder = new HolderId(command.User.Id.ToString());
         var resourceName = command.Tokens[1];
         
-        var takeResource = await _takeResource.Execute(holder, resourceName, ct);
-        return await takeResource.Match<Task<TgHandlerResult>>(
+        var freeResource = await _freeResourceUseCase.Execute(holder, resourceName, ct);
+        return await freeResource.Match<Task<TgHandlerResult>>(
             success => Task.FromResult<TgHandlerResult>(new TelegramReply(success.Reply)), 
             failure => Task.FromResult<TgHandlerResult>(new TelegramHandlerFailure(failure.Error))
         );

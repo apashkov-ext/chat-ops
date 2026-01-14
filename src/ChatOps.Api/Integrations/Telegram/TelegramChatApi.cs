@@ -21,7 +21,7 @@ internal sealed class TelegramChatApi : ITelegramChatApi
 
     public async Task<OneOf<Message, SendTelegramMessageFailure>> SendHtmlMessage(long chatId, string text, CancellationToken ct = default)
     {
-        _logger.LogInformation("Sending response to chat: {Response:l}", text);
+        _logger.LogDebug("Sending response to chat: {Response:l}", text);
         try
         {
             return await _botClient.SendMessage(chatId: chatId,

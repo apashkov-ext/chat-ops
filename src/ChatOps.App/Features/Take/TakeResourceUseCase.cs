@@ -1,11 +1,12 @@
 ﻿using ChatOps.App.Core.Models;
 using ChatOps.App.SharedPorts;
+using OneOf;
 
 namespace ChatOps.App.Features.Take;
 
 public interface ITakeResourceUseCase
 {
-    Task<OneOf.OneOf<TakeResourceSuccess, TakeResourceFailure>> Execute(
+    Task<OneOf<TakeResourceSuccess, TakeResourceFailure>> Execute(
         HolderId holderId,
         string resourceName, 
         CancellationToken ct = default);
@@ -27,7 +28,7 @@ public sealed class TakeResourceUseCase : ITakeResourceUseCase
         _findResourceById = findResourceById;
     }
     
-    public async Task<OneOf.OneOf<TakeResourceSuccess, TakeResourceFailure>> Execute(HolderId holderId, string resourceName, CancellationToken ct = default)
+    public async Task<OneOf<TakeResourceSuccess, TakeResourceFailure>> Execute(HolderId holderId, string resourceName, CancellationToken ct = default)
     {
         return new TakeResourceFailure("Фича еще не готова");
     }
