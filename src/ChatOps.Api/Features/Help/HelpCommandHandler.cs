@@ -1,4 +1,5 @@
-﻿using ChatOps.Api.Integrations.Telegram;
+﻿using ChatOps.Api.Integrations;
+using ChatOps.Api.Integrations.Telegram;
 using ChatOps.Api.Integrations.Telegram.Core;
 
 namespace ChatOps.Api.Features.Help;
@@ -35,7 +36,7 @@ internal sealed class HelpCommandHandler : ITelegramCommandHandler, ICommandInfo
     private static string BuildInfo(ICommandInfo info)
     {
         var text = $"""
-                     {TgHtml.B(info.Command)}
+                     {TgHtml.Code(Constants.CommandPrefix, info.Command)}
                      {TgHtml.Esc(info.Description)}
                     """;
         return text;

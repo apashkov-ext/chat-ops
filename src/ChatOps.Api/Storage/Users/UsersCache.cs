@@ -1,6 +1,6 @@
 ﻿using ChatOps.Api.Integrations.Telegram.Core;
 
-namespace ChatOps.Api.Integrations.Telegram;
+namespace ChatOps.Api.Storage.Users;
 
 internal sealed class UsersCache : IUsersCache
 {

@@ -23,7 +23,7 @@ public class HelpCommandHandlerTests
         const string expectedMessage = """
                                        ℹ️ <b>Доступные команды:</b>
 
-                                        <b>help</b>
+                                        <code>@chatops help</code>
                                         Показать справку
                                        """;
         
@@ -40,10 +40,10 @@ public class HelpCommandHandlerTests
         const string expectedMessage = """
                                        ℹ️ <b>Доступные команды:</b>
                                        
-                                        <b>start</b>
+                                        <code>@chatops start</code>
                                         Поздороваться
 
-                                        <b>help</b>
+                                        <code>@chatops help</code>
                                         Показать справку
                                        """;
         

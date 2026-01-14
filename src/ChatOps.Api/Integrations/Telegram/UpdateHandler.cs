@@ -1,5 +1,6 @@
-using ChatOps.Api.Integrations.FileStorage;
 using ChatOps.Api.Integrations.Telegram.Core;
+using ChatOps.Api.Storage.Files;
+using ChatOps.Api.Storage.Users;
 using Microsoft.Extensions.Options;
 using Telegram.Bot.Polling;
 

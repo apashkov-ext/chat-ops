@@ -1,4 +1,4 @@
-﻿namespace ChatOps.Api.Integrations.FileStorage;
+﻿namespace ChatOps.Api.Storage.Files;
 
 internal static class Module
 {

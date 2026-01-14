@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 
-namespace ChatOps.Api.Integrations.FileStorage;
+namespace ChatOps.Api.Storage.Files;
 
 internal interface IImageResolver
 {

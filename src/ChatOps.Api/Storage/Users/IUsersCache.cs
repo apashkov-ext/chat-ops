@@ -1,4 +1,6 @@
-﻿namespace ChatOps.Api.Integrations.Telegram.Core;
+﻿using ChatOps.Api.Integrations.Telegram.Core;
+
+namespace ChatOps.Api.Storage.Users;
 
 internal interface IUsersCache
 {
