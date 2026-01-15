@@ -10,12 +10,12 @@ namespace ChatOps.Api.Features.List;
 internal sealed class ListCommandHandler : ITelegramCommandHandler, ICommandInfo
 {
     private readonly IListResourcesUseCase _listResourcesUseCase;
-    private readonly IUsersCache _usersStore;
+    private readonly IFindTelegramUserById _findTgUser;
 
-    public ListCommandHandler(IListResourcesUseCase listResourcesUseCase, IUsersCache usersStore)
+    public ListCommandHandler(IListResourcesUseCase listResourcesUseCase, IFindTelegramUserById findTgUser)
     {
         _listResourcesUseCase = listResourcesUseCase;
-        _usersStore = usersStore;
+        _findTgUser = findTgUser;
     }
 
     public string Command => "list";
@@ -45,7 +45,7 @@ internal sealed class ListCommandHandler : ITelegramCommandHandler, ICommandInfo
             if (resource.Holder != null)
             {
                 var id = long.Parse(resource.Holder.Value);
-                holder = _usersStore.Find(id);
+                holder = _findTgUser.Find(id);
             }
             
             yield return new ResourceHolderPair(resource, holder);

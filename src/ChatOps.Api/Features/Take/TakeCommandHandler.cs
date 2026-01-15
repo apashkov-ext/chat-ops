@@ -8,13 +8,13 @@ namespace ChatOps.Api.Features.Take;
 internal sealed class TakeCommandHandler : ITelegramCommandHandler, ICommandInfo
 {
     private readonly ITakeResourceUseCase _takeResource;
-    private readonly IUsersCache _usersCache;
+    private readonly IFindTelegramUserById _findTgUser;
 
     public TakeCommandHandler(ITakeResourceUseCase takeResource,
-        IUsersCache usersCache)
+        IFindTelegramUserById findTgUser)
     {
         _takeResource = takeResource;
-        _usersCache = usersCache;
+        _findTgUser = findTgUser;
     }
 
     public string Command => "take <resource>";
@@ -65,7 +65,7 @@ internal sealed class TakeCommandHandler : ITelegramCommandHandler, ICommandInfo
     private string GetMentionForHolder(HolderId holder, string nonameUserPlaceholder)
     {
         var userId = long.Parse(holder.Value);
-        var user = _usersCache.Find(userId);
+        var user = _findTgUser.Find(userId);
                 
         var mention = user?.GetMention() ?? TelegramUser.GetMention(userId, nonameUserPlaceholder);
         return mention;

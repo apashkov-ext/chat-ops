@@ -12,7 +12,7 @@ public class ListCommandHandlerTests
 {
     private readonly ListCommandHandler _handler;
     private readonly Mock<IListResourcesUseCase> _listResourcesUseCase;
-    private readonly Mock<IUsersCache> _usersCache;
+    private readonly Mock<IFindTelegramUserById> _findTgUser;
     
     public ListCommandHandlerTests()
     {
@@ -22,8 +22,8 @@ public class ListCommandHandlerTests
         _listResourcesUseCase.Setup(x => x.Execute(It.IsAny<CancellationToken>())).ReturnsAsync([]);
         mocker.Use(_listResourcesUseCase);
         
-        _usersCache = new Mock<IUsersCache>();
-        mocker.Use(_usersCache);
+        _findTgUser = new Mock<IFindTelegramUserById>();
+        mocker.Use(_findTgUser);
         
         _handler = mocker.CreateInstance<ListCommandHandler>();
     }
@@ -63,7 +63,7 @@ public class ListCommandHandlerTests
             new(new ResourceId("dev2"), ResourceState.Free, null)
         ];
         _listResourcesUseCase.Setup(x => x.Execute(It.IsAny<CancellationToken>())).ReturnsAsync(model);
-        _usersCache.Setup(x => x.Find(It.Is<long>(m => m == 888)))
+        _findTgUser.Setup(x => x.Find(It.Is<long>(m => m == 888)))
             .Returns(new TelegramUser(888, "Имя", null, "user"));
         
         var result = await _handler.Handle(TelegramCommand.Empty(new TelegramUser(999, "Имя", null, "user2")));

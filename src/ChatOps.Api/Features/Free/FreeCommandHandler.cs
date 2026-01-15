@@ -8,15 +8,15 @@ namespace ChatOps.Api.Features.Free;
 internal sealed class FreeCommandHandler : ITelegramCommandHandler, ICommandInfo
 {
     private readonly IFreeResourceUseCase _freeResourceUseCase;
-    private readonly IUsersCache _usersCache;
+    private readonly IFindTelegramUserById _findTgUser;
     public string Command => "free <resource>";
     public string Description => "Освободить указанный ресурс";
 
     public FreeCommandHandler(IFreeResourceUseCase freeResourceUseCase,
-        IUsersCache usersCache)
+        IFindTelegramUserById findTgUser)
     {
         _freeResourceUseCase = freeResourceUseCase;
-        _usersCache = usersCache;
+        _findTgUser = findTgUser;
     }
 
     public bool CanHandle(TelegramCommand command)
@@ -63,7 +63,7 @@ internal sealed class FreeCommandHandler : ITelegramCommandHandler, ICommandInfo
     private string GetMentionForHolder(HolderId holder, string nonameUserPlaceholder)
     {
         var userId = long.Parse(holder.Value);
-        var user = _usersCache.Find(userId);
+        var user = _findTgUser.Find(userId);
                 
         var mention = user?.GetMention() ?? TelegramUser.GetMention(userId, nonameUserPlaceholder);
         return mention;

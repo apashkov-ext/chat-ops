@@ -2,8 +2,7 @@
 
 namespace ChatOps.Api.LocalAdapters.Users;
 
-internal interface IUsersCache
+internal interface IUpsertTelegramUser
 {
-    void Set(TelegramUser user);
-    TelegramUser? Find(long id);
+    void Upsert(TelegramUser user);
 }

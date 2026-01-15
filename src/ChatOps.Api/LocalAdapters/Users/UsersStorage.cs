@@ -2,16 +2,21 @@
 
 namespace ChatOps.Api.LocalAdapters.Users;
 
-internal sealed class UsersCache : IUsersCache
+internal sealed class UsersStorage : IFindTelegramUserById, IUpsertTelegramUser
 {
     private readonly List<TelegramUser> _users;
 
-    public UsersCache(List<TelegramUser> users)
+    public UsersStorage(List<TelegramUser> users)
     {
         _users = users;
     }
+
+    public TelegramUser? Find(long id)
+    {
+        return _users.Find(x => x.Id == id);
+    }
     
-    public void Set(TelegramUser user)
+    public void Upsert(TelegramUser user)
     {
         var index = _users.FindIndex(x => x.Id == user.Id);
         if (index != -1)
@@ -22,10 +27,5 @@ internal sealed class UsersCache : IUsersCache
         {
             _users.Add(user);
         }
-    }
-
-    public TelegramUser? Find(long id)
-    {
-        return _users.Find(x => x.Id == id);
     }
 }

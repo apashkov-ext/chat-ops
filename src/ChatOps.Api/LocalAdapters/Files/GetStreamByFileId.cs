@@ -2,16 +2,16 @@
 
 namespace ChatOps.Api.LocalAdapters.Files;
 
-internal interface IImageResolver
+internal interface IGetStreamByFileId
 {
     Stream ResolveById(string imageId);
 }
 
-internal sealed class ImageResolver : IImageResolver
+internal sealed class GetStreamByFileId : IGetStreamByFileId
 {
-    private readonly ImagesOptions _options;
+    private readonly FilesOptions _options;
     
-    public ImageResolver(IOptions<ImagesOptions> imagesOptions)
+    public GetStreamByFileId(IOptions<FilesOptions> imagesOptions)
     {
         _options = imagesOptions.Value;
     }
