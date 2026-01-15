@@ -2,12 +2,12 @@
 
 internal static class Module
 {
-    public static void AddImagesDatabase(this WebApplicationBuilder builder)
+    public static void AddFilesDatabase(this WebApplicationBuilder builder)
     {
-        builder.Services.AddOptionsWithValidateOnStart<ImagesOptions>()
-            .BindConfiguration(ImagesOptions.SectionName)
+        builder.Services.AddOptionsWithValidateOnStart<FilesOptions>()
+            .BindConfiguration(FilesOptions.SectionName)
             .ValidateDataAnnotations();
         
-        builder.Services.AddTransient<IImageResolver, ImageResolver>();
+        builder.Services.AddTransient<IGetStreamByFileId, GetStreamByFileId>();
     }
 }

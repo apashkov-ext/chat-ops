@@ -10,21 +10,21 @@ internal sealed class UpdateHandler : IUpdateHandler
 {
     private readonly long[] _allowedChatIds;
     private readonly ITelegramCommandHandler[] _handlers;
-    private readonly IUsersCache _usersStore;
+    private readonly IUpsertTelegramUser _saveTelegramUser;
     private readonly ITelegramChatApi _chatApi;
-    private readonly IImageResolver _imageResolver;
+    private readonly IGetStreamByFileId _imageResolver;
     private readonly ILogger<UpdateHandler> _logger;
 
     public UpdateHandler(IEnumerable<ITelegramCommandHandler> handlers,
-        IUsersCache usersStore,
+        IUpsertTelegramUser saveTelegramUser,
         ITelegramChatApi chatApi,
         IOptions<TelegramConfig> config,
-        IImageResolver imageResolver,
+        IGetStreamByFileId imageResolver,
         ILogger<UpdateHandler> logger)
     {
         _allowedChatIds = config.Value.GetAllowedChatIds();
         _handlers = handlers.ToArray();
-        _usersStore = usersStore;
+        _saveTelegramUser = saveTelegramUser;
         _chatApi = chatApi;
         _imageResolver = imageResolver;
         _logger = logger;
@@ -78,7 +78,7 @@ internal sealed class UpdateHandler : IUpdateHandler
         var user = new TelegramUser(from.Id, from.FirstName, from.LastName, from.Username);
         
         // запомним юзера для рендера ответа.
-        _usersStore.Set(user);
+        _saveTelegramUser.Upsert(user);
         
         var text = message.Text ?? string.Empty;
         if (!IsCommand(text))

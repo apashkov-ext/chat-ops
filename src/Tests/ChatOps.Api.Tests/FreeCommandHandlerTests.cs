@@ -13,7 +13,7 @@ public class FreeCommandHandlerTests
     private readonly TelegramUser _user;
     private readonly FreeCommandHandler _handler;
     private readonly Mock<IFreeResourceUseCase> _freeResourceUseCase;
-    private readonly Mock<IUsersCache> _cache;
+    private readonly Mock<IFindTelegramUserById> _findTgUser;
 
     
     public FreeCommandHandlerTests()
@@ -30,8 +30,8 @@ public class FreeCommandHandlerTests
             .ReturnsAsync(new FreeResourceSuccess());
         mocker.Use(_freeResourceUseCase);
         
-        _cache = new Mock<IUsersCache>();
-        mocker.Use(_cache);
+        _findTgUser = new Mock<IFindTelegramUserById>();
+        mocker.Use(_findTgUser);
         
         _handler = mocker.CreateInstance<FreeCommandHandler>();
     }
@@ -157,7 +157,7 @@ public class FreeCommandHandlerTests
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new FreeResourceInUse(new HolderId("999")));
         
-        _cache.Setup(x => x.Find(It.IsAny<long>())).Returns(new TelegramUser(999, "Имя", null, "username"));
+        _findTgUser.Setup(x => x.Find(It.IsAny<long>())).Returns(new TelegramUser(999, "Имя", null, "username"));
         
         var cmd = TelegramCommand.Parse(_user, "free resName");
         var result = await _handler.Handle(cmd);

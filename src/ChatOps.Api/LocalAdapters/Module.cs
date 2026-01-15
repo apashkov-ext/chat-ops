@@ -8,6 +8,6 @@ internal static class Module
     public static void AddLocalAdapters(this WebApplicationBuilder builder)
     {
         builder.AddUsersCache();
-        builder.AddImagesDatabase();
+        builder.AddFilesDatabase();
     }
 }
