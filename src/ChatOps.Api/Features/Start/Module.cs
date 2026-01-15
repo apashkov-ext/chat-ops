@@ -6,7 +6,8 @@ internal static class Module
 {
     public static void AddStartFeature(this WebApplicationBuilder builder)
     {
-        builder.Services.AddTransient<ITelegramCommandHandler, StartCommandHandler>();
-        builder.Services.AddTransient<ICommandInfo, StartCommandHandler>();
+        builder.Services.AddTransient<StartCommandHandler>();
+        builder.Services.AddTransient<ITelegramCommandHandler>(prov => prov.GetRequiredService<StartCommandHandler>());
+        builder.Services.AddTransient<ICommandInfo>(prov  => prov.GetRequiredService<StartCommandHandler>());
     }
 }

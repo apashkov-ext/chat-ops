@@ -5,10 +5,11 @@ namespace ChatOps.Api.Features.Free;
 
 internal static class Module
 {
-    public static void AddReleaseFeature(this WebApplicationBuilder builder)
+    public static void AddFreeFeature(this WebApplicationBuilder builder)
     {
-        builder.Services.AddTransient<ITelegramCommandHandler, FreeCommandHandler>();
-        builder.Services.AddTransient<ICommandInfo, FreeCommandHandler>();
+        builder.Services.AddTransient<FreeCommandHandler>();
+        builder.Services.AddTransient<ITelegramCommandHandler>(prov => prov.GetRequiredService<FreeCommandHandler>());
+        builder.Services.AddTransient<ICommandInfo>(prov => prov.GetRequiredService<FreeCommandHandler>());
         builder.Services.AddFreeFeatureApp();
     }    
 }

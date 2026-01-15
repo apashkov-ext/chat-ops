@@ -1,5 +1,5 @@
 ﻿using ChatOps.Api.Integrations.Telegram.Core;
-using ChatOps.Api.Storage.Users;
+using ChatOps.Api.LocalAdapters.Users;
 using ChatOps.App.Core.Models;
 using ChatOps.App.Features.Take;
 
