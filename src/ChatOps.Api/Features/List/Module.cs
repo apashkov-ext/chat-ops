@@ -8,8 +8,9 @@ internal static class Module
     public static void AddListFeature(this WebApplicationBuilder builder)
     {
         builder.Services
-            .AddTransient<ITelegramCommandHandler, ListCommandHandler>()
-            .AddTransient<ICommandInfo, ListCommandHandler>()
+            .AddTransient<ListCommandHandler>()
+            .AddTransient<ITelegramCommandHandler>(prov => prov.GetRequiredService<ListCommandHandler>())
+            .AddTransient<ICommandInfo>(prov => prov.GetRequiredService<ListCommandHandler>())
             .AddListFeatureApp();
     }    
 }

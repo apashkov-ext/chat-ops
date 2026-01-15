@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ChatOps.Api.Storage.Files;
+namespace ChatOps.Api.LocalAdapters.Files;
 
 internal sealed class ImagesOptions
 {
