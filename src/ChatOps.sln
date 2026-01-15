@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatOps.App", "ChatOps.App\ChatOps.App.csproj", "{130B27E2-F359-4F4D-B587-632835B8E6C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatOps.Api", "ChatOps.Api\ChatOps.Api.csproj", "{EA3E80C0-2216-4F14-B8FB-FB97D34501F4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{AAAF6447-E3D2-43A2-824C-9B67D94456EF}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{0ADCE11D-A108-4DBD-811D-68171AF47B76}"
+	ProjectSection(SolutionItems) = preProject
+		Tests\Directory.Build.props = Tests\Directory.Build.props
+		Tests\Directory.Packages.props = Tests\Directory.Packages.props
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatOps.Api.Tests", "Tests\ChatOps.Api.Tests\ChatOps.Api.Tests.csproj", "{F70D7637-489F-4E45-8DB4-C53A9E39C6C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatOps.Infra", "ChatOps.Infra\ChatOps.Infra.csproj", "{381A0F81-14E1-4B4B-9B7E-76C0880800E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatOps.SharedKernel", "ChatOps.SharedKernel\ChatOps.SharedKernel.csproj", "{BC68F918-BAF0-4F0E-92CE-25247F4974AF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{130B27E2-F359-4F4D-B587-632835B8E6C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{130B27E2-F359-4F4D-B587-632835B8E6C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{130B27E2-F359-4F4D-B587-632835B8E6C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{130B27E2-F359-4F4D-B587-632835B8E6C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA3E80C0-2216-4F14-B8FB-FB97D34501F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA3E80C0-2216-4F14-B8FB-FB97D34501F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA3E80C0-2216-4F14-B8FB-FB97D34501F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA3E80C0-2216-4F14-B8FB-FB97D34501F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F70D7637-489F-4E45-8DB4-C53A9E39C6C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F70D7637-489F-4E45-8DB4-C53A9E39C6C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F70D7637-489F-4E45-8DB4-C53A9E39C6C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F70D7637-489F-4E45-8DB4-C53A9E39C6C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{381A0F81-14E1-4B4B-9B7E-76C0880800E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{381A0F81-14E1-4B4B-9B7E-76C0880800E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{381A0F81-14E1-4B4B-9B7E-76C0880800E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{381A0F81-14E1-4B4B-9B7E-76C0880800E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC68F918-BAF0-4F0E-92CE-25247F4974AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC68F918-BAF0-4F0E-92CE-25247F4974AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC68F918-BAF0-4F0E-92CE-25247F4974AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC68F918-BAF0-4F0E-92CE-25247F4974AF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F70D7637-489F-4E45-8DB4-C53A9E39C6C1} = {0ADCE11D-A108-4DBD-811D-68171AF47B76}
+	EndGlobalSection
+EndGlobal

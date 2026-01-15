@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+      <UserSecretsId>f485ecb8-3f0d-48a5-860c-170427202e36</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ChatOps.App\ChatOps.App.csproj" />
+      <ProjectReference Include="..\ChatOps.Infra\ChatOps.Infra.csproj" />
+      <ProjectReference Include="..\ChatOps.SharedKernel\ChatOps.SharedKernel.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+      <PackageReference Include="Telegram.Bot" />
+      <PackageReference Include="OneOf" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Content\donotdisturb.jpg">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+</Project>
