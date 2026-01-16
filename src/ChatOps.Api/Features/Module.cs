@@ -1,4 +1,5 @@
-﻿using ChatOps.Api.Features.Free;
+﻿using ChatOps.Api.Features.Deploy;
+using ChatOps.Api.Features.Free;
 using ChatOps.Api.Features.Help;
 using ChatOps.Api.Features.List;
 using ChatOps.Api.Features.Start;
@@ -15,5 +16,6 @@ internal static class Module
         builder.AddListFeature();
         builder.AddTakeFeature();
         builder.AddFreeFeature();
+        builder.AddDeployFeature();
     }
 }
