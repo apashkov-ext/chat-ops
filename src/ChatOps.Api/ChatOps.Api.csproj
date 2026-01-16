@@ -2,6 +2,7 @@
 
     <PropertyGroup>
       <UserSecretsId>f485ecb8-3f0d-48a5-860c-170427202e36</UserSecretsId>
+      <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
@@ -20,6 +21,12 @@
       <None Update="Content\donotdisturb.jpg">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
     </ItemGroup>
 
 </Project>

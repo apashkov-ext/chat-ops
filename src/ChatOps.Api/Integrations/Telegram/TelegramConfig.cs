@@ -14,7 +14,7 @@ internal sealed class TelegramConfig
     public long[] GetAllowedChatIds()
     {
         return AllowedChats
-            .Split(',', ';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .Split([',', ';'], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
             .Select(long.Parse)
             .ToArray();
     }

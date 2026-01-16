@@ -1,0 +1,14 @@
+﻿services:
+  chatops.api:
+    build:
+      context: .
+      dockerfile: ChatOps.Api/Dockerfile
+    image: chatops.api
+    env_file:
+      - secrets.env
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Files__Directory: Content
+      Logging__LogLevel__Default: Debug
+      Logging__LogLevel__Microsoft.AspNetCore: Warning
+    restart: unless-stopped

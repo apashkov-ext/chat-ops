@@ -4,10 +4,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatOps.App", "ChatOps.App\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatOps.Api", "ChatOps.Api\ChatOps.Api.csproj", "{EA3E80C0-2216-4F14-B8FB-FB97D34501F4}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{AAAF6447-E3D2-43A2-824C-9B67D94456EF}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AAAF6447-E3D2-43A2-824C-9B67D94456EF}"
 	ProjectSection(SolutionItems) = preProject
 		Directory.Build.props = Directory.Build.props
 		Directory.Packages.props = Directory.Packages.props
+		compose.yaml = compose.yaml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{0ADCE11D-A108-4DBD-811D-68171AF47B76}"
