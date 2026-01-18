@@ -11,7 +11,7 @@ public interface IFreeResourceUseCase
         CancellationToken ct = default);
 }
 
-public sealed class FreeResourceUseCase : IFreeResourceUseCase
+internal sealed class FreeResourceUseCase : IFreeResourceUseCase
 {
     private readonly IFindResourceById _findResourceById;
     private readonly IUpdateResource _updateResource;
@@ -38,6 +38,8 @@ public sealed class FreeResourceUseCase : IFreeResourceUseCase
         {
             return new FreeResourceInUse(resource.Holder!);
         }
+        
+        // TODO: если ресурс уже свободен, ничего не делать и сообщить об этом.
         
         resource.Free();
         await _updateResource.Execute(resource, ct);

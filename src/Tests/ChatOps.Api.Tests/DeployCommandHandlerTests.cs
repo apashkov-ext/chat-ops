@@ -27,7 +27,7 @@ public class DeployCommandHandlerTests
         _deployUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
                 It.IsAny<ResourceId>(), 
-                It.IsAny<BranchId>(), 
+                It.IsAny<Branch>(), 
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new DeploySuccess());
         mocker.Use(_deployUseCase);
@@ -77,7 +77,7 @@ public class DeployCommandHandlerTests
         _deployUseCase.Verify(x => x.Execute(
             It.IsAny<HolderId>(),
             It.IsAny<ResourceId>(),
-            It.IsAny<BranchId>(),
+            It.IsAny<Branch>(),
             It.IsAny<CancellationToken>()), Times.Never);
     }
     
@@ -100,7 +100,7 @@ public class DeployCommandHandlerTests
         _deployUseCase.Verify(x => x.Execute(
             It.Is<HolderId>(h => h.Value == _user.Id.ToString()),
             It.Is<ResourceId>(r => r == new ResourceId("resourceName")),
-            It.Is<BranchId>(r => r == new BranchId("branchName")),
+            It.Is<Branch>(r => r == new Branch("branchName")),
             It.IsAny<CancellationToken>()), Times.Once);
     }    
     
@@ -110,7 +110,7 @@ public class DeployCommandHandlerTests
         _deployUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
                 It.IsAny<ResourceId>(), 
-                It.IsAny<BranchId>(),
+                It.IsAny<Branch>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new DeploySuccess());
         

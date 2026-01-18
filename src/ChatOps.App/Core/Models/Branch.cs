@@ -1,10 +1,10 @@
 ﻿namespace ChatOps.App.Core.Models;
 
-public sealed class BranchId : ValueObject
+public sealed class Branch : ValueObject
 {
     public string Value { get; }
 
-    public BranchId(string value)
+    public Branch(string value)
     {
         Value = value;
     }
@@ -17,5 +17,10 @@ public sealed class BranchId : ValueObject
     protected override string GetStringRepresentation()
     {
         return Value;
+    }
+
+    public string GetUrlEncodedValue()
+    {
+        return Uri.EscapeDataString(Value);
     }
 }

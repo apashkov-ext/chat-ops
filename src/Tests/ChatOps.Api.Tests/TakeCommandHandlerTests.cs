@@ -100,7 +100,7 @@ public class TakeCommandHandlerTests
     }    
     
     [Fact]
-    public async Task Handle_SuccessShouldBeMappedToReply()
+    public async Task Handle_Success_ShouldBeMappedToReply()
     {
         _takeResourceUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
@@ -116,7 +116,7 @@ public class TakeCommandHandlerTests
     }    
     
     [Fact]
-    public async Task Handle_NotFoundShouldBeMappedToReply()
+    public async Task Handle_NotFound_ShouldBeMappedToReply()
     {
         _takeResourceUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
@@ -132,7 +132,7 @@ public class TakeCommandHandlerTests
     }  
     
     [Fact]
-    public async Task Handle_ReservedAndUserNotCached_ShouldBeMappedToReply()
+    public async Task Handle_InUseAndUserNotCached_ShouldBeMappedToReply()
     {
         _takeResourceUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
@@ -148,7 +148,7 @@ public class TakeCommandHandlerTests
     }      
     
     [Fact]
-    public async Task Handle_ReservedAndUserCached_ShouldBeMappedToReply()
+    public async Task Handle_InuseAndUserCached_ShouldBeMappedToReply()
     {
         _takeResourceUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
@@ -166,7 +166,7 @@ public class TakeCommandHandlerTests
     }  
     
     [Fact]
-    public async Task Handle_FailureShouldBeMappedToFailure()
+    public async Task Handle_Failure_ShouldBeMappedToFailure()
     {
         _takeResourceUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 

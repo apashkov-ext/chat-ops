@@ -33,11 +33,15 @@ public sealed class TakeResourceUseCase : ITakeResourceUseCase
         {
             return new TakeResourceNotFound();
         }
+        
+        // TODO: если у юзера уже есть занятый ресурс, пусть сперва его освободит.
 
         if (ResourceReservedByAnotherUser(resource, holder))
         {
             return new TakeResourceInUse(resource.Holder!);
         }
+        
+        // TODO: если ресурс уже занят этим юзером, ничего не делать и сообщить об этом.
         
         resource.Reserve(holder);
         await _updateResource.Execute(resource, ct);

@@ -3,7 +3,19 @@
     <PropertyGroup>
       <UserSecretsId>f485ecb8-3f0d-48a5-860c-170427202e36</UserSecretsId>
       <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+      <VersionPrefix>0.5.0</VersionPrefix>
+      <InformationalVersion>$(VersionPrefix)</InformationalVersion>
     </PropertyGroup>
+
+    <Target Name="SetInformationalVersionFromGit" BeforeTargets="GenerateAssemblyInfo">
+        <Exec Command="git rev-parse --short HEAD" ConsoleToMsBuild="true" IgnoreExitCode="true">
+            <Output TaskParameter="ConsoleOutput" PropertyName="GitSha" />
+        </Exec>
+
+        <PropertyGroup Condition="'$(GitSha)' != ''">
+            <InformationalVersion>$(VersionPrefix)+$(GitSha.Trim())</InformationalVersion>
+        </PropertyGroup>
+    </Target>
 
     <ItemGroup>
       <ProjectReference Include="..\ChatOps.App\ChatOps.App.csproj" />

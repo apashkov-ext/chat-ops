@@ -10,5 +10,6 @@ namespace ChatOps.App.Features.Take;
 
 public sealed record TakeResourceSuccess;
 public sealed record TakeResourceNotFound;
+public sealed record TakeResourceLimitExceeded;
 public sealed record TakeResourceInUse(HolderId HolderId); 
 public sealed record TakeResourceFailure(string Error);

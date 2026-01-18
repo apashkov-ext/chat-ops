@@ -9,5 +9,6 @@ internal static class Module
         builder.Services.AddTransient<StartCommandHandler>();
         builder.Services.AddTransient<ITelegramCommandHandler>(prov => prov.GetRequiredService<StartCommandHandler>());
         builder.Services.AddTransient<ICommandInfo>(prov  => prov.GetRequiredService<StartCommandHandler>());
+        builder.Services.AddTransient<IApplicationVersionResolver, ApplicationVersionResolver>();
     }
 }

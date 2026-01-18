@@ -55,7 +55,12 @@ internal sealed class FreeCommandHandler : ITelegramCommandHandler, ICommandInfo
                 var msg = $"⚠️ Ресурс зарезервирован для {mention}";
                 var txt = new TelegramText(msg);
                 return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));
-            }, 
+            },
+            alreadyFree =>
+            {
+                var txt = new TelegramText("ℹ️ Ресурс уже свободен");
+                return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));
+            },
             failure => Task.FromResult<TgHandlerResult>(new TelegramHandlerFailure(failure.Error))
         );
     }
