@@ -16,13 +16,13 @@ internal sealed class FreeResourceUseCase : IFreeResourceUseCase
     private readonly IFindResourceById _findResourceById;
     private readonly IUpdateResource _updateResource;
 
-    public FreeResourceUseCase(IFindResourceById findResourceById, 
+    public FreeResourceUseCase(IFindResourceById findResourceById,
         IUpdateResource updateResource)
     {
         _findResourceById = findResourceById;
         _updateResource = updateResource;
     }
-    
+
     public async Task<FreeResourceResult> Execute(
         HolderId holder,
         ResourceId resourceId,
@@ -33,24 +33,35 @@ internal sealed class FreeResourceUseCase : IFreeResourceUseCase
         {
             return new FreeResourceNotFound();
         }
-        
+
+        if (ResourceIsFree(resource))
+        {
+            return new FreeResourceAlreadyFree();
+        }
+
         if (ResourceReservedByAnotherUser(resource, holder))
         {
             return new FreeResourceInUse(resource.Holder!);
         }
-        
-        // TODO: если ресурс уже свободен, ничего не делать и сообщить об этом.
-        
+
         resource.Free();
         await _updateResource.Execute(resource, ct);
-        
+
         return new FreeResourceSuccess();
+    }
+
+    private static bool ResourceIsFree(Resource resource)
+    {
+        return resource.State == ResourceState.Free;
+    }
+
+    private static bool HolderIsEmpty(Resource resource)
+    {
+        return resource.Holder == null;
     }
 
     private static bool ResourceReservedByAnotherUser(Resource resource, HolderId currentHolder)
     {
-        return 
-            resource.State == ResourceState.Reserved 
-            && resource.Holder != null && resource.Holder != currentHolder;
+        return resource.State == ResourceState.Reserved && resource.Holder != currentHolder;
     }
 }

@@ -6,7 +6,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\ChatOps.Api\ChatOps.App.csproj" />
         <ProjectReference Include="..\..\ChatOps.App\ChatOps.App.csproj" />
     </ItemGroup>
 

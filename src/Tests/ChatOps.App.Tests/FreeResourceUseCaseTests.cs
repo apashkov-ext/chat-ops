@@ -1,4 +1,6 @@
-﻿using ChatOps.App.Features.Free;
+﻿using ChatOps.App.Core.Models;
+using ChatOps.App.Features.Free;
+using ChatOps.App.Features.Take;
 using ChatOps.App.SharedPorts;
 using Moq;
 using Moq.AutoMock;
@@ -25,8 +27,66 @@ public class FreeResourceUseCaseTests
     }
 
     [Fact]
-    public void ResourceNotFound_ShouldReturnNotFound()
+    public async Task ResourceNotFound_ShouldReturnNotFound()
     {
-        throw new NotImplementedException();
+        var holderId = new HolderId("888");
+        var resourceId = new ResourceId("id");
+        
+        var result = await _useCase.Execute(holderId, resourceId);
+        
+        Assert.True(result.TryPickT1(out var notFound, out _));
     }
+    
+    [Fact]
+    public async Task AlreadyFree_ShouldReturnAlreadyFree()
+    {
+        var holderId = new HolderId("888");
+        var resourceId = new ResourceId("id");
+        _findResourceById.Setup(x => x.Execute(It.IsAny<ResourceId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Resource(resourceId, ResourceState.Free, null));
+        
+        var result = await _useCase.Execute(holderId, resourceId);
+        
+        Assert.True(result.TryPickT3(out var alreadyFree, out _));
+    }
+
+    [Fact]
+    public async Task InUseByAnotherUser_ShouldReturnInUse()
+    {
+        var holderId = new HolderId("888");
+        var resourceId = new ResourceId("id");
+        _findResourceById.Setup(x => x.Execute(It.IsAny<ResourceId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Resource(resourceId, ResourceState.Reserved, new HolderId("999")));
+        
+        var result = await _useCase.Execute(holderId, resourceId);
+        
+        Assert.True(result.TryPickT2(out var inUse, out _));
+        Assert.Equal(new HolderId("999"), inUse.HolderId);
+    }    
+    
+    [Fact]
+    public async Task ShouldReturnSuccess()
+    {
+        var holderId = new HolderId("888");
+        var resourceId = new ResourceId("id");
+        _findResourceById.Setup(x => x.Execute(It.IsAny<ResourceId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Resource(resourceId, ResourceState.Reserved, new HolderId("888")));
+        
+        var result = await _useCase.Execute(holderId, resourceId);
+        
+        Assert.True(result.TryPickT0(out var success, out _));
+    }   
+    
+    [Fact]
+    public async Task ShouldInvokeUpdate()
+    {
+        var holderId = new HolderId("888");
+        var resourceId = new ResourceId("id");
+        _findResourceById.Setup(x => x.Execute(It.IsAny<ResourceId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Resource(resourceId, ResourceState.Reserved, new HolderId("888")));
+        
+        var result = await _useCase.Execute(holderId, resourceId);
+        
+        _updateResource.Verify(x => x.Execute(It.Is<Resource>(r => r.Id == resourceId), It.IsAny<CancellationToken>()), Times.Once);
+    }   
 }

@@ -1,6 +1,7 @@
 ﻿using ChatOps.Api.Features.Start;
 using ChatOps.Api.Integrations;
 using ChatOps.Api.Integrations.Telegram.Core;
+using Moq;
 using Moq.AutoMock;
 
 namespace ChatOps.Api.Tests;
@@ -12,6 +13,11 @@ public class StartCommandHandlerTests
     public StartCommandHandlerTests()
     {
         var mocker = new AutoMocker();
+
+        var ver = new Mock<IApplicationVersionResolver>();
+        ver.Setup(x => x.GetVersion()).Returns("v1.0.0");
+        mocker.Use(ver);
+        
         _handler = mocker.CreateInstance<StartCommandHandler>();
     }
     
@@ -24,6 +30,7 @@ public class StartCommandHandlerTests
                                         Давай накатывать вместе!
 
                                         Чтобы узнать, что я умею, напиши <code>{Constants.CommandPrefix} help</code>
+                                        <code>v1.0.0</code>
                                         """;        
         var result = await _handler.Handle(TelegramCommand.Empty(new TelegramUser(888, "user")));
         
