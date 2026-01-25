@@ -1,30 +1,35 @@
 ﻿using ChatOps.App.Core.Models;
-using ChatOps.App.Features.Free;
+using ChatOps.App.Features.Take;
 using ChatOps.App.SharedPorts;
 using Moq;
 using Moq.AutoMock;
 
 namespace ChatOps.App.Tests;
 
-public class FreeResourceUseCaseTests
+public class TakeResourceUseCaseTests
 {
-    private readonly FreeResourceUseCase _useCase;
     private readonly Mock<IFindResourceById> _findResourceById;
     private readonly Mock<IUpdateResource> _updateResource;
+    private readonly Mock<ICountReservedResourcesByHolder> _countResources;
     
-    public FreeResourceUseCaseTests()
+    private readonly TakeResourceUseCase _useCase;
+    
+    public TakeResourceUseCaseTests()
     {
         var mocker = new AutoMocker();
-
+        
         _findResourceById = new Mock<IFindResourceById>();
         mocker.Use(_findResourceById);
         
         _updateResource = new Mock<IUpdateResource>();
         mocker.Use(_updateResource);
         
-        _useCase = mocker.CreateInstance<FreeResourceUseCase>();
+        _countResources  = new Mock<ICountReservedResourcesByHolder>();
+        mocker.Use(_countResources);
+        
+        _useCase = mocker.CreateInstance<TakeResourceUseCase>();
     }
-
+    
     [Fact]
     public async Task ResourceNotFound_ShouldReturnNotFound()
     {
@@ -35,20 +40,24 @@ public class FreeResourceUseCaseTests
         
         Assert.True(result.TryPickT1(out _, out _));
     }
-    
+
     [Fact]
-    public async Task AlreadyFree_ShouldReturnAlreadyFree()
+    public async Task TooManyResources_ShouldReturnLimitExceeded()
     {
         var holderId = new HolderId("888");
         var resourceId = new ResourceId("id");
         _findResourceById.Setup(x => x.Execute(It.IsAny<ResourceId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Resource(resourceId, ResourceState.Free, null));
+        _countResources.Setup(x => x.Execute(
+                It.IsAny<HolderId>(), 
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(TakeResourceUseCase.MaxResourcesPerUser + 1);
         
         var result = await _useCase.Execute(holderId, resourceId);
         
-        Assert.True(result.TryPickT3(out _, out _));
+        Assert.True(result.TryPickT2(out _, out _));
     }
-
+    
     [Fact]
     public async Task InUseByAnotherUser_ShouldReturnInUse()
     {
@@ -59,22 +68,43 @@ public class FreeResourceUseCaseTests
         
         var result = await _useCase.Execute(holderId, resourceId);
         
-        Assert.True(result.TryPickT2(out var inUse, out _));
+        Assert.True(result.TryPickT3(out var inUse, out _));
         Assert.Equal(new HolderId("999"), inUse.HolderId);
-    }    
+    }  
     
     [Fact]
-    public async Task ShouldReturnSuccess()
+    public async Task IsFree_ShouldReturnSuccess()
     {
         var holderId = new HolderId("888");
         var resourceId = new ResourceId("id");
         _findResourceById.Setup(x => x.Execute(It.IsAny<ResourceId>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Resource(resourceId, ResourceState.Reserved, new HolderId("888")));
+            .ReturnsAsync(new Resource(resourceId, ResourceState.Free, null));
+        _countResources.Setup(x => x.Execute(
+                It.IsAny<HolderId>(), 
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(0);
         
         var result = await _useCase.Execute(holderId, resourceId);
         
         Assert.True(result.TryPickT0(out _, out _));
-    }   
+    } 
+    
+    [Fact]
+    public async Task IsReservedButHolderIsNull_ShouldReturnSuccess()
+    {
+        var holderId = new HolderId("888");
+        var resourceId = new ResourceId("id");
+        _findResourceById.Setup(x => x.Execute(It.IsAny<ResourceId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Resource(resourceId, ResourceState.Reserved, null));
+        _countResources.Setup(x => x.Execute(
+                It.IsAny<HolderId>(), 
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(0);
+        
+        var result = await _useCase.Execute(holderId, resourceId);
+        
+        Assert.True(result.TryPickT0(out _, out _));
+    } 
     
     [Fact]
     public async Task ShouldInvokeUpdate()
@@ -82,7 +112,11 @@ public class FreeResourceUseCaseTests
         var holderId = new HolderId("888");
         var resourceId = new ResourceId("id");
         _findResourceById.Setup(x => x.Execute(It.IsAny<ResourceId>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Resource(resourceId, ResourceState.Reserved, new HolderId("888")));
+            .ReturnsAsync(new Resource(resourceId, ResourceState.Free, null));
+        _countResources.Setup(x => x.Execute(
+                It.IsAny<HolderId>(), 
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(0);
         
         _ = await _useCase.Execute(holderId, resourceId);
         

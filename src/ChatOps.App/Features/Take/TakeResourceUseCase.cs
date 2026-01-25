@@ -13,14 +13,19 @@ public interface ITakeResourceUseCase
 
 public sealed class TakeResourceUseCase : ITakeResourceUseCase
 {
+    public const int MaxResourcesPerUser = 1;
     private readonly IFindResourceById _findResourceById;
     private readonly IUpdateResource _updateResource;
+    private readonly ICountReservedResourcesByHolder _countReservedResourcesByHolder;
 
-    public TakeResourceUseCase(IFindResourceById findResourceById, 
-        IUpdateResource updateResource)
+    public TakeResourceUseCase(
+        IFindResourceById findResourceById, 
+        IUpdateResource updateResource,
+        ICountReservedResourcesByHolder countReservedResourcesByHolder)
     {
         _findResourceById = findResourceById;
         _updateResource = updateResource;
+        _countReservedResourcesByHolder = countReservedResourcesByHolder;
     }
     
     public async Task<TakeResourceResult> Execute(
@@ -33,26 +38,29 @@ public sealed class TakeResourceUseCase : ITakeResourceUseCase
         {
             return new TakeResourceNotFound();
         }
-        
-        // TODO: если у юзера уже есть занятый ресурс, пусть сперва его освободит.
 
-        if (ResourceReservedByAnotherUser(resource, holder))
+        if (resource.State == ResourceState.Reserved)
         {
-            return new TakeResourceInUse(resource.Holder!);
+            if (resource.Holder == holder)
+            {
+                return new TakeResourceAlreadyReserved();
+            }
+
+            if (resource.Holder != null)
+            {
+                return new TakeResourceInUse(resource.Holder);
+            }
         }
         
-        // TODO: если ресурс уже занят этим юзером, ничего не делать и сообщить об этом.
-        
+        var count = await _countReservedResourcesByHolder.Execute(holder, ct);
+        if (count > MaxResourcesPerUser)
+        {
+            return new TakeResourceLimitExceeded();
+        }
+            
         resource.Reserve(holder);
         await _updateResource.Execute(resource, ct);
         
         return new TakeResourceSuccess();
-    }
-    
-    private static bool ResourceReservedByAnotherUser(Resource resource, HolderId currentHolder)
-    {
-        return 
-            resource.State == ResourceState.Reserved 
-            && resource.Holder != null && resource.Holder != currentHolder;
     }
 }

@@ -1,7 +1,9 @@
 ﻿global using TakeResourceResult = OneOf.OneOf<
     ChatOps.App.Features.Take.TakeResourceSuccess,
     ChatOps.App.Features.Take.TakeResourceNotFound,
+    ChatOps.App.Features.Take.TakeResourceLimitExceeded,
     ChatOps.App.Features.Take.TakeResourceInUse,
+    ChatOps.App.Features.Take.TakeResourceAlreadyReserved,
     ChatOps.App.Features.Take.TakeResourceFailure
 >;
 using ChatOps.App.Core.Models;
@@ -12,4 +14,5 @@ public sealed record TakeResourceSuccess;
 public sealed record TakeResourceNotFound;
 public sealed record TakeResourceLimitExceeded;
 public sealed record TakeResourceInUse(HolderId HolderId); 
+public sealed record TakeResourceAlreadyReserved; 
 public sealed record TakeResourceFailure(string Error);

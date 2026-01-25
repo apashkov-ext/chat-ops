@@ -1,10 +1,8 @@
 ﻿using ChatOps.Api.Features.Deploy;
-using ChatOps.Api.Features.Take;
 using ChatOps.Api.Integrations.Telegram.Core;
 using ChatOps.Api.LocalAdapters.Users;
 using ChatOps.App.Core.Models;
 using ChatOps.App.Features.Deploy;
-using ChatOps.App.Features.Take;
 using Moq;
 using Moq.AutoMock;
 
@@ -15,8 +13,7 @@ public class DeployCommandHandlerTests
     private readonly TelegramUser _user;
     private readonly DeployCommandHandler _handler;
     private readonly Mock<IDeployUseCase> _deployUseCase;
-    private readonly Mock<IFindTelegramUserById> _findTgUser;
-    
+
     public DeployCommandHandlerTests()
     {
         _user = new TelegramUser(888, "user");
@@ -32,8 +29,8 @@ public class DeployCommandHandlerTests
             .ReturnsAsync(new DeploySuccess());
         mocker.Use(_deployUseCase);
 
-        _findTgUser = new Mock<IFindTelegramUserById>();
-        mocker.Use(_findTgUser);
+        var findTgUser = new Mock<IFindTelegramUserById>();
+        mocker.Use(findTgUser);
         
         _handler = mocker.CreateInstance<DeployCommandHandler>();
     }

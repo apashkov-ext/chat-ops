@@ -132,6 +132,22 @@ public class TakeCommandHandlerTests
     }  
     
     [Fact]
+    public async Task Handle_LimitExceeded_ShouldBeMappedToReply()
+    {
+        _takeResourceUseCase.Setup(x => x.Execute(
+                It.IsAny<HolderId>(), 
+                It.IsAny<ResourceId>(), 
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TakeResourceLimitExceeded());
+        
+        var cmd = TelegramCommand.Parse(_user, "take resName");
+        var result = await _handler.Handle(cmd);
+        
+        Assert.True(result.TryPickT0(out var reply, out _));
+        Assert.Equal("⚠️ Сначала нужно освободить занятые ресурсы", reply.Text?.Text);
+    }     
+    
+    [Fact]
     public async Task Handle_InUseAndUserNotCached_ShouldBeMappedToReply()
     {
         _takeResourceUseCase.Setup(x => x.Execute(
@@ -148,7 +164,7 @@ public class TakeCommandHandlerTests
     }      
     
     [Fact]
-    public async Task Handle_InuseAndUserCached_ShouldBeMappedToReply()
+    public async Task Handle_InUseAndUserCached_ShouldBeMappedToReply()
     {
         _takeResourceUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
@@ -164,6 +180,22 @@ public class TakeCommandHandlerTests
         Assert.True(result.TryPickT0(out var reply, out _));
         Assert.Equal("⚠️ Ресурс уже зарезервирован для <a href=\"tg://user?id=999\">@username</a>", reply.Text?.Text);
     }  
+    
+    [Fact]
+    public async Task Handle_AlreadyReserved_ShouldBeMappedToReply()
+    {
+        _takeResourceUseCase.Setup(x => x.Execute(
+                It.IsAny<HolderId>(), 
+                It.IsAny<ResourceId>(), 
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TakeResourceAlreadyReserved());
+        
+        var cmd = TelegramCommand.Parse(_user, "take resName");
+        var result = await _handler.Handle(cmd);
+        
+        Assert.True(result.TryPickT0(out var reply, out _));
+        Assert.Equal("ℹ️ Ресурс уже занят вами", reply.Text?.Text);
+    }    
     
     [Fact]
     public async Task Handle_Failure_ShouldBeMappedToFailure()

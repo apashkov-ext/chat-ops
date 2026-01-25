@@ -55,13 +55,10 @@ internal sealed class FreeResourceUseCase : IFreeResourceUseCase
         return resource.State == ResourceState.Free;
     }
 
-    private static bool HolderIsEmpty(Resource resource)
-    {
-        return resource.Holder == null;
-    }
-
     private static bool ResourceReservedByAnotherUser(Resource resource, HolderId currentHolder)
     {
-        return resource.State == ResourceState.Reserved && resource.Holder != currentHolder;
-    }
+        return 
+            resource.State == ResourceState.Reserved 
+            && resource.Holder != null 
+            && resource.Holder != currentHolder;    }
 }
