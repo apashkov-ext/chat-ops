@@ -2,8 +2,8 @@
 
 internal interface ITelegramCommandHandler
 {
-    bool CanHandle(TelegramCommand collection);
-    Task<TgHandlerResult> Handle(TelegramCommand collection, CancellationToken ct = default);
+    bool CanHandle(TelegramCommand command);
+    Task<TgHandlerResult> Handle(TelegramCommand command, CancellationToken ct = default);
 }
 
 internal interface ICommandInfo

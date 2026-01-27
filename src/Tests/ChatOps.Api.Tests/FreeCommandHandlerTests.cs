@@ -101,7 +101,7 @@ public class FreeCommandHandlerTests
     }    
     
     [Fact]
-    public async Task Handle_SuccessShouldBeMappedToReply()
+    public async Task Handle_Success_ShouldBeMappedToReply()
     {
         _freeResourceUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
@@ -117,7 +117,7 @@ public class FreeCommandHandlerTests
     }       
     
     [Fact]
-    public async Task Handle_NotFoundShouldBeMappedToReply()
+    public async Task Handle_NotFound_ShouldBeMappedToReply()
     {
         _freeResourceUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
@@ -130,6 +130,22 @@ public class FreeCommandHandlerTests
         
         Assert.True(result.TryPickT0(out var reply, out _));
         Assert.Equal("⚠️ Ресурс не найден", reply.Text?.Text);
+    }        
+    
+    [Fact]
+    public async Task Handle_AlreadyFree_ShouldBeMappedToReply()
+    {
+        _freeResourceUseCase.Setup(x => x.Execute(
+                It.IsAny<HolderId>(), 
+                It.IsAny<ResourceId>(), 
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FreeResourceAlreadyFree());
+        
+        var cmd = TelegramCommand.Parse(_user, "free resName");
+        var result = await _handler.Handle(cmd);
+        
+        Assert.True(result.TryPickT0(out var reply, out _));
+        Assert.Equal("ℹ️ Ресурс уже свободен", reply.Text?.Text);
     }     
     
     [Fact]
@@ -167,7 +183,7 @@ public class FreeCommandHandlerTests
     }    
     
     [Fact]
-    public async Task Handle_FailureShouldBeMappedToFailure()
+    public async Task Handle_Failure_ShouldBeMappedToFailure()
     {
         _freeResourceUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 

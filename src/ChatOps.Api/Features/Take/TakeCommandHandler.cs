@@ -51,10 +51,22 @@ internal sealed class TakeCommandHandler : ITelegramCommandHandler, ICommandInfo
                 var txt = new TelegramText("⚠️ Ресурс не найден");
                 return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));
             },
+            limitExceeded =>
+            {
+                var msg = "⚠️ Сначала нужно освободить занятые ресурсы";
+                var txt = new TelegramText(msg);
+                return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));
+            },            
             inUse =>
             {
                 var mention = GetMentionForHolder(inUse.HolderId, "Личности без имени");
                 var msg = $"⚠️ Ресурс уже зарезервирован для {mention}";
+                var txt = new TelegramText(msg);
+                return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));
+            },            
+            alreadyReserved =>
+            {
+                var msg = "ℹ️ Ресурс уже занят вами";
                 var txt = new TelegramText(msg);
                 return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));
             },

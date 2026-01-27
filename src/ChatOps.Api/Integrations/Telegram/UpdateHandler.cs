@@ -73,23 +73,16 @@ internal sealed class UpdateHandler : IUpdateHandler
             _logger.LogDebug("Message.From is null, skipping");
             return;
         }
-        
-        var from = message.From;
-        var user = new TelegramUser(from.Id, from.FirstName, from.LastName, from.Username);
-        
-        // запомним юзера для рендера ответа.
-        _saveTelegramUser.Upsert(user);
-        
-        var text = message.Text ?? string.Empty;
-        if (!IsCommand(text))
+
+        if (!TryGetCommand(message, out var command))
         {
             _logger.LogDebug("This is not a command, skipping");
             return;
         }
-
-        text = Clean(text);
         
-        var command = TelegramCommand.Parse(user, text);
+        // запомним юзера для рендера ответа.
+        _saveTelegramUser.Upsert(command.User);
+        
         if (command.Tokens.Count == 0)
         {
             _logger.LogInformation("Empty command, skipping");
@@ -148,9 +141,22 @@ internal sealed class UpdateHandler : IUpdateHandler
         return _allowedChatIds.Any(x => x == update.Message?.Chat.Id);
     }
 
-    private static bool IsCommand(string text)
+    private static bool TryGetCommand(Message message, out TelegramCommand command)
     {
-        return text.StartsWith($"{Constants.CommandPrefix}");
+        var text = message.Text ?? string.Empty;
+        var from = message.From!;
+        var user = new TelegramUser(from.Id, from.FirstName, from.LastName, from.Username);
+        
+        if (message.Chat.Type != ChatType.Private && !text.StartsWith($"{Constants.CommandPrefix}"))
+        {
+            command = TelegramCommand.Empty(user);
+            return false;
+        }
+        
+        // личная переписка с ботом, можно без официоза
+        text = Clean(text);
+        command = TelegramCommand.Parse(user, text);
+        return true;
     }    
     
     private static string Clean(string text)
