@@ -29,7 +29,7 @@ internal sealed class StartCommandHandler : ITelegramCommandHandler, ICommandInf
                                        Давай накатывать вместе!
                                        
                                        Чтобы узнать, что я умею, напиши <code>{Constants.CommandPrefix} help</code>
-                                       {TgHtml.Code(version)}
+                                       v.{TgHtml.Code(version)}
                                        """;
         
         var text = new TelegramText(message);

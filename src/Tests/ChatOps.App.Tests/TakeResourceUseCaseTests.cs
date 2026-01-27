@@ -41,8 +41,12 @@ public class TakeResourceUseCaseTests
         Assert.True(result.TryPickT1(out _, out _));
     }
 
-    [Fact]
-    public async Task TooManyResources_ShouldReturnLimitExceeded()
+    [Theory]
+    // Достигнут максимум
+    [InlineData(TakeResourceUseCase.MaxResourcesPerUser)]
+    // Больше максимума
+    [InlineData(TakeResourceUseCase.MaxResourcesPerUser + 1)]
+    public async Task TooManyResources_ShouldReturnLimitExceeded(int count)
     {
         var holderId = new HolderId("888");
         var resourceId = new ResourceId("id");
@@ -51,7 +55,7 @@ public class TakeResourceUseCaseTests
         _countResources.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TakeResourceUseCase.MaxResourcesPerUser + 1);
+            .ReturnsAsync(count);
         
         var result = await _useCase.Execute(holderId, resourceId);
         

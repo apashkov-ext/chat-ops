@@ -16,6 +16,6 @@ internal static class Module
         builder.AddListFeature();
         builder.AddTakeFeature();
         builder.AddFreeFeature();
-        builder.AddDeployFeature();
+        //builder.AddDeployFeature();
     }
 }

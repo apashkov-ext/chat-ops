@@ -53,7 +53,7 @@ public sealed class TakeResourceUseCase : ITakeResourceUseCase
         }
         
         var count = await _countReservedResourcesByHolder.Execute(holder, ct);
-        if (count > MaxResourcesPerUser)
+        if (count >= MaxResourcesPerUser)
         {
             return new TakeResourceLimitExceeded();
         }
