@@ -1,12 +1,14 @@
-﻿namespace ChatOps.App.Core.Models;
+﻿using ChatOps.App.Core;
 
-public sealed class Branch : ValueObject
+namespace ChatOps.Infra.Integrations.GitLab.Models;
+
+internal sealed class GitLabProjectId : ValueObject
 {
     public string Value { get; }
-
-    public Branch(string value)
+    
+    public GitLabProjectId(NamespacedPath value)
     {
-        Value = value;
+        Value = value.UrlEncodedValue;
     }
     
     protected override IEnumerable<object?> GetEqualityComponents()
@@ -17,10 +19,5 @@ public sealed class Branch : ValueObject
     protected override string GetStringRepresentation()
     {
         return Value;
-    }
-
-    public string GetUrlEncodedValue()
-    {
-        return Uri.EscapeDataString(Value);
     }
 }

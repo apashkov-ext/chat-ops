@@ -6,6 +6,9 @@
     <ItemGroup>
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
         <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.1" />
+        <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.1" />
+        <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.1" />
+        <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.1" />
         <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.1" />
         <PackageVersion Include="Telegram.Bot" Version="22.7.6" />
         <PackageVersion Include="OneOf" Version="3.0.271" />

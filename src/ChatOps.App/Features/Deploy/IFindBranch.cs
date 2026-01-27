@@ -4,5 +4,5 @@ namespace ChatOps.App.Features.Deploy;
 
 public interface IFindBranch
 {
-    Task<Branch?> Execute(Branch branch, CancellationToken ct = default);
+    Task<BranchId?> Execute(BranchId branch, CancellationToken ct = default);
 }

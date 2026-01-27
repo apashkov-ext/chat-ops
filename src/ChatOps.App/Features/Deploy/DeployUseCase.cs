@@ -7,7 +7,7 @@ public interface IDeployUseCase
 {
     Task<DeployResult> Execute(HolderId holderId,
         ResourceId resourceId, 
-        Branch branch, 
+        BranchId branchId, 
         CancellationToken ct = default);
 }
 
@@ -15,18 +15,21 @@ internal sealed class DeployUseCase : IDeployUseCase
 {
     private readonly IFindResourceById _findResourceById;
     private readonly IFindBranch _findBranch;
+    private readonly ICreatePipeline _createPipeline;
 
     public DeployUseCase(
         IFindResourceById findResourceById,
-        IFindBranch findBranch)
+        IFindBranch findBranch,
+        ICreatePipeline createPipeline)
     {
         _findResourceById = findResourceById;
         _findBranch = findBranch;
+        _createPipeline = createPipeline;
     }
     
     public async Task<DeployResult> Execute(HolderId holderId,
         ResourceId resourceId, 
-        Branch branch, 
+        BranchId branchId, 
         CancellationToken ct = default)
     {
         var resource = await _findResourceById.Execute(resourceId, ct);
@@ -35,26 +38,45 @@ internal sealed class DeployUseCase : IDeployUseCase
             return new DeployResourceNotFound();
         }
 
-        if (ResourceReservedByAnotherUser(resource, holderId))
+        if (!ResourceReservedByCurrentUser(resource, holderId))
         {
-            return new DeployResourceInUse(holderId);
+            return new DeployResourceNotReserved();
         }
         
-        // проверить, существует ли ветка
+        var branch = await _findBranch.Execute(branchId, ct);
+        if (branch is null)
+        {
+            return new DeployBranchNotFound();
+        }
         
-        // проверить, запущен ли уже пайплайн с такими же параметрами (если это возможно). Если запущен - что тогда? Варианты:
-        // - остановить его и запустить новый
-        // - запустить новый, не останавливая старый (поставить в очередь).
-        // - сообщить юзеру и ничего не делать.
+        var createPipeline = await _createPipeline.Execute(resource, branch, ct);
+        return await createPipeline.Match<Task<DeployResult>>(success =>
+            {
+                throw new NotImplementedException();
+            },
+            alreadyExists =>
+            {
+                throw new NotImplementedException();
+            },
+            failure =>
+            {
+                throw new NotImplementedException();
+            }
+        );
+        
+
         // TODO: сколько максимум pipeline можно запускать на одном ресурсе?
 
-        throw new NotImplementedException();
+        return new DeploySuccess();
     }
-    
-    private static bool ResourceReservedByAnotherUser(Resource resource, HolderId currentHolder)
+
+    private static bool ResourceReservedByCurrentUser(Resource resource, HolderId currentHolder)
     {
-        return 
-            resource.State == ResourceState.Reserved 
-            && resource.Holder != null && resource.Holder != currentHolder;
+        return resource.State != ResourceState.Reserved && resource.Holder == currentHolder;
+    }
+
+    private static bool BranchIsAllowed(BranchId branch)
+    {
+        return branch.Value.Contains("feature/");
     }
 }

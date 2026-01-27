@@ -4,8 +4,4 @@
       <ProjectReference Include="..\ChatOps.App\ChatOps.App.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Features\List\" />
-    </ItemGroup>
-
 </Project>
