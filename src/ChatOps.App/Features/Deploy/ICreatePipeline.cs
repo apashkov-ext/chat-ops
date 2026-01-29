@@ -10,7 +10,7 @@ namespace ChatOps.App.Features.Deploy;
 
 public interface ICreatePipeline
 {
-    Task<CreatePipelineResult> Execute(Resource resource, BranchId branch, CancellationToken ct = default);
+    Task<CreatePipelineResult> Execute(Resource resource, Ref @ref, CancellationToken ct = default);
 }
 
 public sealed record CreatePipelineSuccess;

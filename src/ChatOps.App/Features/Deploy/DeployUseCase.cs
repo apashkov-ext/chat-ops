@@ -7,19 +7,19 @@ public interface IDeployUseCase
 {
     Task<DeployResult> Execute(HolderId holderId,
         ResourceId resourceId, 
-        BranchId branchId, 
+        Ref @ref, 
         CancellationToken ct = default);
 }
 
 internal sealed class DeployUseCase : IDeployUseCase
 {
     private readonly IFindResourceById _findResourceById;
-    private readonly IFindBranch _findBranch;
+    private readonly IFindRef _findBranch;
     private readonly ICreatePipeline _createPipeline;
 
     public DeployUseCase(
         IFindResourceById findResourceById,
-        IFindBranch findBranch,
+        IFindRef findBranch,
         ICreatePipeline createPipeline)
     {
         _findResourceById = findResourceById;
@@ -29,7 +29,7 @@ internal sealed class DeployUseCase : IDeployUseCase
     
     public async Task<DeployResult> Execute(HolderId holderId,
         ResourceId resourceId, 
-        BranchId branchId, 
+        Ref @ref, 
         CancellationToken ct = default)
     {
         var resource = await _findResourceById.Execute(resourceId, ct);
@@ -43,13 +43,13 @@ internal sealed class DeployUseCase : IDeployUseCase
             return new DeployResourceNotReserved();
         }
         
-        var branch = await _findBranch.Execute(branchId, ct);
+        var branch = await _findBranch.Execute(@ref, ct);
         if (branch is null)
         {
             return new DeployBranchNotFound();
         }
         
-        var createPipeline = await _createPipeline.Execute(resource, branch, ct);
+        var createPipeline = await _createPipeline.Execute(resource, @ref, ct);
         return await createPipeline.Match<Task<DeployResult>>(success =>
             {
                 throw new NotImplementedException();
@@ -63,7 +63,6 @@ internal sealed class DeployUseCase : IDeployUseCase
                 throw new NotImplementedException();
             }
         );
-        
 
         // TODO: сколько максимум pipeline можно запускать на одном ресурсе?
 
@@ -75,8 +74,8 @@ internal sealed class DeployUseCase : IDeployUseCase
         return resource.State != ResourceState.Reserved && resource.Holder == currentHolder;
     }
 
-    private static bool BranchIsAllowed(BranchId branch)
+    private static bool RefIsAllowed(Ref @ref)
     {
-        return branch.Value.Contains("feature/");
+        return @ref.Value.Contains("feature/");
     }
 }

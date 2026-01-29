@@ -1,6 +1,4 @@
-﻿using ChatOps.App.Core.Models;
-using ChatOps.Infra.Integrations.GitLab.Http.Models;
-using ChatOps.Infra.Integrations.GitLab.Models;
+﻿using ChatOps.Infra.Integrations.GitLab.Http.Models;
 using Refit;
 
 namespace ChatOps.Infra.Integrations.GitLab.Http;
@@ -10,6 +8,6 @@ namespace ChatOps.Infra.Integrations.GitLab.Http;
 // TODO: retry
 internal interface IPipelineApi
 {
-    [Post("/projects/{projectId}/pipeline?ref={branchId}")]
-    Task<CreatedPipelineDto> Create(GitLabProjectId projectId, BranchId branchId);
+    [Post("/projects/{projectId}/pipeline?ref={ref}")]
+    Task<ApiResponse<CreatedPipelineDto>> Create(string projectId, string @ref);
 }
