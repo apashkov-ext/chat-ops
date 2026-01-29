@@ -12,6 +12,8 @@
         <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.1" />
         <PackageVersion Include="Telegram.Bot" Version="22.7.6" />
         <PackageVersion Include="OneOf" Version="3.0.271" />
+        <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.1" />
+        <PackageVersion Include="Refit.HttpClientFactory" Version="9.0.2" />
     </ItemGroup>
     
 </Project>

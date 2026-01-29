@@ -16,6 +16,6 @@ internal sealed class GitLabOptions
     [Required]
     public required string ProjectId { get; init; }
     
-    public Uri HostUri => new(Host);
+    public Uri HostUri => new(Host.TrimEnd('/'));
     public GitLabProjectId Project => new (ProjectId);
 }
