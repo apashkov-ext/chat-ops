@@ -1,21 +1,29 @@
 ﻿using ChatOps.App.Core.Models;
 using ChatOps.App.Features.Deploy;
+using ChatOps.Infra.Integrations.GitLab;
 using ChatOps.Infra.Integrations.GitLab.Http;
+using Microsoft.Extensions.Options;
 using OneOf;
 
 namespace ChatOps.Infra.Features.Deploy;
 
 internal sealed class GitLabCreatePipeline : ICreatePipeline
 {
+    private readonly GitLabOptions _options;
     private readonly IPipelineApi _pipelineApi;
 
-    public GitLabCreatePipeline(IPipelineApi pipelineApi)
+    public GitLabCreatePipeline(IOptions<GitLabOptions> gitLabOptions,
+        IPipelineApi pipelineApi)
     {
+        _options = gitLabOptions.Value;
         _pipelineApi = pipelineApi;
     }
     
-    public Task<OneOf<CreatePipelineSuccess, CreatePipelineAlreadyExists, CreatePipelineFailure>> Execute(Resource resource, Ref @ref, CancellationToken ct = default)
+    public async Task<OneOf<CreatePipelineSuccess, CreatePipelineAlreadyExists, CreatePipelineFailure>> Execute(Resource resource, Ref @ref, CancellationToken ct = default)
     {
+        var response = await _pipelineApi.Create(_options.Project.Value, Uri.EscapeDataString(@ref.Value), ct);
+        
+        
         // проверить, запущен ли уже пайплайн с такими же параметрами (если это возможно). Если запущен - что тогда? Варианты:
         // - остановить его и запустить новый
         // - запустить новый, не останавливая старый (поставить в очередь).

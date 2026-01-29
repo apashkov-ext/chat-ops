@@ -1,5 +1,4 @@
-﻿using ChatOps.Infra.Integrations.GitLab.Http.Models;
-using Refit;
+﻿using Refit;
 
 namespace ChatOps.Infra.Integrations.GitLab.Http;
 
@@ -9,5 +8,16 @@ namespace ChatOps.Infra.Integrations.GitLab.Http;
 internal interface IPipelineApi
 {
     [Post("/projects/{projectId}/pipeline?ref={ref}")]
-    Task<ApiResponse<CreatedPipelineDto>> Create(string projectId, string @ref);
+    [Headers("Content-Type: application/x-www-form-urlencoded")]
+    Task<ApiResponse<CreatedPipelineDto>> Create(
+        string projectId, 
+        [AliasAs("ref")] string @ref, 
+        CancellationToken ct = default);
+}
+
+internal sealed class CreatedPipelineDto
+{
+    public required int Id { get; init; }
+    public required string Status { get; init; }
+    public required string Ref { get; init; }
 }
