@@ -1,4 +1,6 @@
-﻿using ChatOps.Infra.Integrations.GitLab.Http;
+﻿using System.Reflection;
+using ChatOps.Infra.Integrations.GitLab.Http;
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -14,9 +16,10 @@ public static class Module
             .BindConfiguration(GitLabOptions.SectionName)
             .ValidateDataAnnotations();
 
-        services.AddGitLabRefit<IPipelineApi>();
+        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         
-        services.AddTransient<IGitLabApi, GitLabApi>();
+        services.AddGitLabRefit<IPipelineApi>();
+        services.AddGitLabRefit<IRefApi>();
     }    
     
     private static IServiceCollection AddGitLabRefit<T>(this IServiceCollection services) where T : class

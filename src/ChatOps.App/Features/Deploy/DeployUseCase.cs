@@ -8,6 +8,7 @@ public interface IDeployUseCase
     Task<DeployResult> Execute(HolderId holderId,
         ResourceId resourceId, 
         Ref @ref, 
+        IEnumerable<Variable> variables,
         CancellationToken ct = default);
 }
 
@@ -30,6 +31,7 @@ internal sealed class DeployUseCase : IDeployUseCase
     public async Task<DeployResult> Execute(HolderId holderId,
         ResourceId resourceId, 
         Ref @ref, 
+        IEnumerable<Variable> variables,
         CancellationToken ct = default)
     {
         var resource = await _findResourceById.Execute(resourceId, ct);
@@ -46,7 +48,7 @@ internal sealed class DeployUseCase : IDeployUseCase
         var branch = await _findBranch.Execute(@ref, ct);
         if (branch is null)
         {
-            return new DeployBranchNotFound();
+            return new DeployRefNotFound();
         }
         
         var createPipeline = await _createPipeline.Execute(resource, @ref, ct);

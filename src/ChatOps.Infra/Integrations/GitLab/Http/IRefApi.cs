@@ -2,7 +2,7 @@
 
 namespace ChatOps.Infra.Integrations.GitLab.Http;
 
-internal interface IBranchesApi
+internal interface IRefApi
 {
     [Post("/projects/{projectId}/repository/branches/{ref}")]
     Task<ApiResponse<BranchDto>> Single(string projectId, string @ref, CancellationToken ct = default);

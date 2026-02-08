@@ -6,9 +6,9 @@ internal sealed class GitLabProjectId : ValueObject
 {
     public string Value { get; }
     
-    public GitLabProjectId(NamespacedPath value)
+    public GitLabProjectId(NamespacedPath path)
     {
-        Value = value.UrlEncodedValue;
+        Value = path.Value;
     }
     
     protected override IEnumerable<object?> GetEqualityComponents()
