@@ -15,16 +15,16 @@ public interface IDeployUseCase
 internal sealed class DeployUseCase : IDeployUseCase
 {
     private readonly IFindResourceById _findResourceById;
-    private readonly IFindRef _findBranch;
+    private readonly IFindRef _findRef;
     private readonly ICreatePipeline _createPipeline;
 
     public DeployUseCase(
         IFindResourceById findResourceById,
-        IFindRef findBranch,
+        IFindRef findRef,
         ICreatePipeline createPipeline)
     {
         _findResourceById = findResourceById;
-        _findBranch = findBranch;
+        _findRef = findRef;
         _createPipeline = createPipeline;
     }
     
@@ -45,35 +45,35 @@ internal sealed class DeployUseCase : IDeployUseCase
             return new DeployResourceNotReserved();
         }
         
-        var branch = await _findBranch.Execute(@ref, ct);
-        if (branch is null)
+        var r = await _findRef.Execute(@ref, ct);
+        if (r is null)
         {
             return new DeployRefNotFound();
         }
         
-        var createPipeline = await _createPipeline.Execute(resource, @ref, ct);
-        return await createPipeline.Match<Task<DeployResult>>(success =>
+        var createPipeline = await _createPipeline.Execute(resource, @ref, variables, ct);
+        return await createPipeline.Match<Task<DeployResult>>(
+            success =>
             {
-                throw new NotImplementedException();
+                var res = new DeploySuccess(success.Pipeline);
+                return Task.FromResult<DeployResult>(res);
             },
             alreadyExists =>
             {
-                throw new NotImplementedException();
+                var res = new DeployInProcess(alreadyExists.Pipeline);
+                return Task.FromResult<DeployResult>(res);
             },
             failure =>
             {
-                throw new NotImplementedException();
+                var res = new DeployFailure();
+                return Task.FromResult<DeployResult>(res);
             }
         );
-
-        // TODO: сколько максимум pipeline можно запускать на одном ресурсе?
-
-        return new DeploySuccess();
     }
 
     private static bool ResourceReservedByCurrentUser(Resource resource, HolderId currentHolder)
     {
-        return resource.State != ResourceState.Reserved && resource.Holder == currentHolder;
+        return resource.State == ResourceState.Reserved && resource.Holder == currentHolder;
     }
 
     private static bool RefIsAllowed(Ref @ref)

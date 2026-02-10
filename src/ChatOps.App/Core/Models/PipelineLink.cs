@@ -1,13 +1,10 @@
 ﻿namespace ChatOps.App.Core.Models;
 
-/// <summary>
-/// Ветка или тег.
-/// </summary>
-public sealed class Ref : ValueObject
+public sealed class PipelineLink : ValueObject
 {
     public string Value { get; }
 
-    public Ref(string value)
+    public PipelineLink(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         Value = value;
@@ -22,4 +19,6 @@ public sealed class Ref : ValueObject
     {
         return Value;
     }
+    
+    public static implicit operator PipelineLink(string link) => new (link);
 }

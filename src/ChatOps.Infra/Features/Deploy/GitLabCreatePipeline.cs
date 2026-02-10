@@ -23,7 +23,11 @@ internal sealed class GitLabCreatePipeline : ICreatePipeline
         _logger = logger;
     }
     
-    public async Task<OneOf<CreatePipelineSuccess, CreatePipelineAlreadyExists, CreatePipelineFailure>> Execute(Resource resource, Ref @ref, CancellationToken ct = default)
+    public async Task<OneOf<CreatePipelineSuccess, CreatePipelineAlreadyExists, CreatePipelineFailure>> Execute(
+        Resource resource, 
+        Ref @ref, 
+        IEnumerable<Variable> variables,
+        CancellationToken ct = default)
     {
         var response = await _pipelineApi.Create(_options.Project.Value, @ref.Value, ct);
         

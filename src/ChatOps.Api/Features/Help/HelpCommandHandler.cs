@@ -20,7 +20,7 @@ internal sealed class HelpCommandHandler : ITelegramCommandHandler, ICommandInfo
         return collection.Tokens is ["help"];
     }
 
-    public async Task<TgHandlerResult> Handle(TelegramCommand collection, CancellationToken ct = default)
+    public Task<TgHandlerResult> Handle(TelegramCommand collection, CancellationToken ct = default)
     {
         var lines = _infos.Select(BuildInfo);
         var separator = Environment.NewLine + Environment.NewLine;
@@ -30,7 +30,7 @@ internal sealed class HelpCommandHandler : ITelegramCommandHandler, ICommandInfo
                     {string.Join(separator, lines)}
                     """;
         var text = new TelegramText(help);
-        return new TelegramReply(text);
+        return Task.FromResult<TgHandlerResult>(new TelegramReply(text));
     }
 
     private static string BuildInfo(ICommandInfo info)

@@ -10,9 +10,13 @@ namespace ChatOps.App.Features.Deploy;
 
 public interface ICreatePipeline
 {
-    Task<CreatePipelineResult> Execute(Resource resource, Ref @ref, CancellationToken ct = default);
+    Task<CreatePipelineResult> Execute(
+        Resource resource, 
+        Ref @ref, 
+        IEnumerable<Variable> variables,
+        CancellationToken ct = default);
 }
 
-public sealed record CreatePipelineSuccess;
-public sealed record CreatePipelineAlreadyExists;
+public sealed record CreatePipelineSuccess(Pipeline Pipeline);
+public sealed record CreatePipelineAlreadyExists(Pipeline Pipeline);
 public sealed record CreatePipelineFailure;

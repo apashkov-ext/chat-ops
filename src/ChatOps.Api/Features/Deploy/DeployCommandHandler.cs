@@ -1,4 +1,5 @@
-﻿using ChatOps.Api.Integrations.Telegram.Core;
+﻿using ChatOps.Api.Integrations.Telegram;
+using ChatOps.Api.Integrations.Telegram.Core;
 using ChatOps.App.Core.Models;
 using ChatOps.App.Features.Deploy;
 using ChatOps.App.Features.Free;
@@ -38,28 +39,50 @@ internal sealed class DeployCommandHandler : ITelegramCommandHandler, ICommandIn
         return await deploy.Match<Task<TgHandlerResult>>(
             success =>
             {
-                throw new NotImplementedException();
+                var formattedId = $"#{success.Pipeline.Id}";
+                var link = TgHtml.Link(formattedId, success.Pipeline.Link.Value);
+                var msg = $"""
+                           ✅ Пайплайн {link} запущен.  
+                           ресурс: {resourceId}
+                           ветка/тег: {@ref}
+                           """;
+                var txt = new TelegramText(msg);
+                return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));
             },
             resourceNotFound =>
             {
-                throw new NotImplementedException();
-            },
-            inUse =>
-            {
-                throw new NotImplementedException();
+                var txt = new TelegramText("⚠️ Ресурс не найден");
+                return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));            
             },
             notReserved =>
             {
-                throw new NotImplementedException();
-            },
+                var txt = new TelegramText("⚠️ Сначала нужно зарезервивовать этот ресурс");
+                return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));            },
             refNotFound =>
             {
-                throw new NotImplementedException();
+                var txt = new TelegramText("⚠️ Ветка/тег не найдена");
+                return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));
+            },            
+            inProcess =>
+            {
+                var formattedId = $"#{inProcess.Pipeline.Id}";
+                var link = TgHtml.Link(formattedId, inProcess.Pipeline.Link.Value);
+                var msg = $"""
+                           ℹ️ Пайплайн {link} уже запущен и выполняется.  
+                           ресурс: {resourceId}
+                           ветка/тег: {@ref}
+                           """;
+                var txt = new TelegramText(msg);
+                return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));
             },
-            failure => Task.FromResult<TgHandlerResult>(new TelegramHandlerFailure(failure.Error))
-        );
-        
-        throw new NotImplementedException();
+            failure =>
+            {
+                const string msg = """
+                                   Не получилось запустить пайплайн.  
+                                   Пойдите и выясните причину.
+                                   """;
+                return Task.FromResult<TgHandlerResult>(new TelegramHandlerFailure(msg));
+            });
     }
 
     private static IEnumerable<Variable> GetVariables(TelegramCommand command)
