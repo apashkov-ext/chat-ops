@@ -37,14 +37,14 @@ internal sealed class FreeCommandHandler : ITelegramCommandHandler, ICommandInfo
         
         var freeResource = await _freeResourceUseCase.Execute(holderId, resourceId, ct);
         return await freeResource.Match<Task<TgHandlerResult>>(
-            success =>
+            _ =>
             {
                 var msg = $"✅ Ресурс '{resourceId}' освобожден";
                 var txt = new TelegramText(msg);
                 var img = new TelegramImage("myjobisdone.jpg");
                 return Task.FromResult<TgHandlerResult>(new TelegramReply(txt, img));
             }, 
-            notFound =>
+            _ =>
             {
                 var txt = new TelegramText("⚠️ Ресурс не найден");
                 return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));
@@ -56,7 +56,7 @@ internal sealed class FreeCommandHandler : ITelegramCommandHandler, ICommandInfo
                 var txt = new TelegramText(msg);
                 return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));
             },
-            alreadyFree =>
+            _ =>
             {
                 var txt = new TelegramText("ℹ️ Ресурс уже свободен");
                 return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));

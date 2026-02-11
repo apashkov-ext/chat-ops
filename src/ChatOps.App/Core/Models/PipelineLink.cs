@@ -4,7 +4,7 @@ public sealed class PipelineLink : ValueObject
 {
     public string Value { get; }
 
-    public PipelineLink(string value)
+    private PipelineLink(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         Value = value;

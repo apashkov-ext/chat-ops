@@ -16,9 +16,7 @@ internal record TelegramReply
 {
     public TelegramImage? Image { get; }
     public TelegramText? Text { get; }
-
-    public TelegramReply() { }
-
+    
     public TelegramReply(TelegramText text)
     {
         Text = text;

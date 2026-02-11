@@ -63,7 +63,7 @@ internal sealed class DeployUseCase : IDeployUseCase
                 var res = new DeployInProcess(alreadyExists.Pipeline);
                 return Task.FromResult<DeployResult>(res);
             },
-            failure =>
+            _ =>
             {
                 var res = new DeployFailure();
                 return Task.FromResult<DeployResult>(res);

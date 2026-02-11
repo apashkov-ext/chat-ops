@@ -2,7 +2,6 @@
 using ChatOps.Api.Integrations.Telegram.Core;
 using ChatOps.App.Core.Models;
 using ChatOps.App.Features.Deploy;
-using ChatOps.App.Features.Free;
 
 namespace ChatOps.Api.Features.Deploy;
 
@@ -49,16 +48,16 @@ internal sealed class DeployCommandHandler : ITelegramCommandHandler, ICommandIn
                 var txt = new TelegramText(msg);
                 return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));
             },
-            resourceNotFound =>
+            _ =>
             {
                 var txt = new TelegramText("⚠️ Ресурс не найден");
                 return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));            
             },
-            notReserved =>
+            _ =>
             {
                 var txt = new TelegramText("⚠️ Сначала нужно зарезервивовать этот ресурс");
                 return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));            },
-            refNotFound =>
+            _ =>
             {
                 var txt = new TelegramText("⚠️ Ветка/тег не найдена");
                 return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));
@@ -75,7 +74,7 @@ internal sealed class DeployCommandHandler : ITelegramCommandHandler, ICommandIn
                 var txt = new TelegramText(msg);
                 return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));
             },
-            failure =>
+            _ =>
             {
                 const string msg = """
                                    Не получилось запустить пайплайн.  

@@ -10,7 +10,7 @@ namespace ChatOps.Infra.Integrations.GitLab;
 
 public static class Module
 {
-    public static void AddGitLabIntegration(this IServiceCollection services, ConfigurationManager configuration)
+    public static void AddGitLabIntegration(this IServiceCollection services, ConfigurationManager _)
     {
         services.AddOptionsWithValidateOnStart<GitLabOptions>()
             .BindConfiguration(GitLabOptions.SectionName)
@@ -22,7 +22,7 @@ public static class Module
         services.AddGitLabRefit<IRefApi>();
     }    
     
-    private static IServiceCollection AddGitLabRefit<T>(this IServiceCollection services) where T : class
+    private static void AddGitLabRefit<T>(this IServiceCollection services) where T : class
     {
         services.AddTransient<GitLabAuthHandler>();
 
@@ -33,7 +33,5 @@ public static class Module
                 c.BaseAddress = options.HostUri;
             })
             .AddHttpMessageHandler<GitLabAuthHandler>();
-        
-        return services;
     }
 }
