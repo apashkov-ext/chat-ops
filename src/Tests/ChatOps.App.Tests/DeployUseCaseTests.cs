@@ -5,7 +5,6 @@ using Moq;
 using Moq.AutoMock;
 using CreatePipelineResult = OneOf.OneOf<
     ChatOps.App.Features.Deploy.CreatePipelineSuccess,
-    ChatOps.App.Features.Deploy.CreatePipelineAlreadyExists,
     ChatOps.App.Features.Deploy.CreatePipelineFailure
 >;
 
@@ -131,25 +130,6 @@ public class DeployUseCaseTests
     }      
     
     [Fact]
-    public async Task CreatePipelineAlreadyExists_ShouldMappedToInProcess()
-    {
-        var holderId = new HolderId("888");
-        var resourceId = new ResourceId("id");
-        var @ref = new Ref("branch");
-        var resource = new Resource(resourceId, ResourceState.Reserved, new HolderId("888"));
-        _findResourceById.Setup(x => x.Execute(It.IsAny<ResourceId>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(resource);
-        _findRef.SetupWithAny<IFindRef, Task<Ref>>(nameof(IFindRef.Execute)).ReturnsAsync(new Ref("branch"));
-        _createPipeline.SetupWithAny<ICreatePipeline, Task<CreatePipelineResult>>(nameof(ICreatePipeline.Execute))
-            .ReturnsAsync(new CreatePipelineAlreadyExists(new Pipeline(123, "https://link")));
-        
-        var result = await _useCase.Execute(holderId, resourceId, @ref, []);
-        
-        Assert.True(result.TryPickT4(out var inProcess, out _));
-        Assert.Equal(new Pipeline(123, "https://link"), inProcess.Pipeline);
-    }      
-    
-    [Fact]
     public async Task CreatePipelineFailure_ShouldMappedToFailure()
     {
         var holderId = new HolderId("888");
@@ -160,7 +140,7 @@ public class DeployUseCaseTests
             .ReturnsAsync(resource);
         _findRef.SetupWithAny<IFindRef, Task<Ref>>(nameof(IFindRef.Execute)).ReturnsAsync(new Ref("branch"));
         _createPipeline.SetupWithAny<ICreatePipeline, Task<CreatePipelineResult>>(nameof(ICreatePipeline.Execute))
-            .ReturnsAsync(new CreatePipelineFailure());
+            .ReturnsAsync(new CreatePipelineFailure(CreatePipelineFailureReason.Unknown));
         
         var result = await _useCase.Execute(holderId, resourceId, @ref, []);
         

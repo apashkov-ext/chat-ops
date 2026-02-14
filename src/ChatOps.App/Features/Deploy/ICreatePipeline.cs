@@ -1,6 +1,5 @@
 ﻿global using CreatePipelineResult = OneOf.OneOf<
     ChatOps.App.Features.Deploy.CreatePipelineSuccess,
-    ChatOps.App.Features.Deploy.CreatePipelineAlreadyExists,
     ChatOps.App.Features.Deploy.CreatePipelineFailure
 >;
 
@@ -18,5 +17,17 @@ public interface ICreatePipeline
 }
 
 public sealed record CreatePipelineSuccess(Pipeline Pipeline);
-public sealed record CreatePipelineAlreadyExists(Pipeline Pipeline);
-public sealed record CreatePipelineFailure;
+public sealed record CreatePipelineFailure(CreatePipelineFailureReason Reason);
+
+public enum CreatePipelineFailureReason
+{
+    Unknown,
+    /// <summary>
+    /// Проблемы с интеграцией
+    /// </summary>
+    Permanent,
+    /// <summary>
+    /// Временная ошибка
+    /// </summary>
+    Transient
+}

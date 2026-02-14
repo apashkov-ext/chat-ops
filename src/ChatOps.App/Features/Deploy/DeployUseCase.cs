@@ -58,11 +58,6 @@ internal sealed class DeployUseCase : IDeployUseCase
                 var res = new DeploySuccess(success.Pipeline);
                 return Task.FromResult<DeployResult>(res);
             },
-            alreadyExists =>
-            {
-                var res = new DeployInProcess(alreadyExists.Pipeline);
-                return Task.FromResult<DeployResult>(res);
-            },
             _ =>
             {
                 var res = new DeployFailure();
@@ -74,10 +69,5 @@ internal sealed class DeployUseCase : IDeployUseCase
     private static bool ResourceReservedByCurrentUser(Resource resource, HolderId currentHolder)
     {
         return resource.State == ResourceState.Reserved && resource.Holder == currentHolder;
-    }
-
-    private static bool RefIsAllowed(Ref @ref)
-    {
-        return @ref.Value.Contains("feature/");
     }
 }
