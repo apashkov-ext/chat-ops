@@ -2,6 +2,7 @@
 
 namespace ChatOps.Infra.Integrations.GitLab.Http;
 
+// TODO: retry
 internal interface IRefApi
 {
     [Post("/projects/{projectId}/repository/branches/{ref}")]

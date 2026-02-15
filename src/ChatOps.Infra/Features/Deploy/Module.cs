@@ -8,5 +8,6 @@ public static class Module
     public static void AddDeployFeatureInfra(this IServiceCollection services)
     {
         services.AddTransient<ICreatePipeline, GitLabCreatePipeline>();
+        services.AddTransient<IFindRef, GitLabFindRef>();
     }    
 }

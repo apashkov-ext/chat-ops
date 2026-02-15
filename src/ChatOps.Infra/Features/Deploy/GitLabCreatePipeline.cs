@@ -15,6 +15,7 @@ internal sealed class GitLabCreatePipeline : ICreatePipeline
 {
     private readonly GitLabOptions _options;
     private readonly IPipelineApi _pipelineApi;
+    // TODO
     private readonly IValidator<CreatedPipelineDto> _validator;
     private readonly ILogger<GitLabCreatePipeline> _logger;
 

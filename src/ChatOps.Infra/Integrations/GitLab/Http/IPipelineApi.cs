@@ -4,8 +4,6 @@ using Refit;
 
 namespace ChatOps.Infra.Integrations.GitLab.Http;
 
-// TODO: вадидация ответов
-// TODO: обработка ошибок
 // TODO: retry
 internal interface IPipelineApi
 {
