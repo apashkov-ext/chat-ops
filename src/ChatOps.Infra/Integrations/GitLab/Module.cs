@@ -16,7 +16,10 @@ public static class Module
             .BindConfiguration(GitLabOptions.SectionName)
             .ValidateDataAnnotations();
 
-        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+        services.AddValidatorsFromAssembly(
+            Assembly.GetExecutingAssembly(), 
+            ServiceLifetime.Transient,
+            includeInternalTypes: true);
         
         services.AddGitLabRefit<IPipelineApi>();
         services.AddGitLabRefit<IRefApi>();

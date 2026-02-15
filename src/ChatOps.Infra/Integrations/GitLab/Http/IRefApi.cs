@@ -1,4 +1,5 @@
-﻿using Refit;
+﻿using FluentValidation;
+using Refit;
 
 namespace ChatOps.Infra.Integrations.GitLab.Http;
 
@@ -6,10 +7,18 @@ namespace ChatOps.Infra.Integrations.GitLab.Http;
 internal interface IRefApi
 {
     [Post("/projects/{projectId}/repository/branches/{ref}")]
-    Task<ApiResponse<BranchDto>> Single(string projectId, string @ref, CancellationToken ct = default);
+    Task<ApiResponse<RefDto>> Single(string projectId, string @ref, CancellationToken ct = default);
 }
 
-internal sealed class BranchDto
+internal sealed class RefDto
 {
     public required string Name { get; init; }
+}
+
+internal sealed class RefDtoValidator : AbstractValidator<RefDto>
+{
+    public RefDtoValidator()
+    {
+        RuleFor(x => x.Name).NotEmpty();
+    }
 }

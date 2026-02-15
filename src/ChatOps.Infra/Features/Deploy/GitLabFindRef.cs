@@ -13,13 +13,13 @@ internal sealed class GitLabFindRef : IFindRef
     private readonly GitLabOptions _options;
     private readonly IRefApi _refApi;
     // TODO
-    private readonly IValidator<BranchDto> _validator;
+    private readonly IValidator<RefDto> _validator;
     private readonly ILogger<GitLabFindRef> _logger;
 
     public GitLabFindRef(
         IOptions<GitLabOptions> gitLabOptions,
         IRefApi pipelineApi,
-        IValidator<BranchDto> validator,
+        IValidator<RefDto> validator,
         ILogger<GitLabFindRef> logger)
     {
         _options = gitLabOptions.Value;
