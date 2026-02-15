@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatOps.SharedKernel", "Cha
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatOps.App.Tests", "Tests\ChatOps.App.Tests\ChatOps.App.Tests.csproj", "{E377CB6E-2A75-4F02-AF51-90C89FA20EDF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatOps.Infra.Tests", "Tests\ChatOps.Infra.Tests\ChatOps.Infra.Tests.csproj", "{4BC08187-3F55-460F-A490-768B7CAA3FF1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,9 +57,14 @@ Global
 		{E377CB6E-2A75-4F02-AF51-90C89FA20EDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E377CB6E-2A75-4F02-AF51-90C89FA20EDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E377CB6E-2A75-4F02-AF51-90C89FA20EDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BC08187-3F55-460F-A490-768B7CAA3FF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BC08187-3F55-460F-A490-768B7CAA3FF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BC08187-3F55-460F-A490-768B7CAA3FF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BC08187-3F55-460F-A490-768B7CAA3FF1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F70D7637-489F-4E45-8DB4-C53A9E39C6C1} = {0ADCE11D-A108-4DBD-811D-68171AF47B76}
 		{E377CB6E-2A75-4F02-AF51-90C89FA20EDF} = {0ADCE11D-A108-4DBD-811D-68171AF47B76}
+		{4BC08187-3F55-460F-A490-768B7CAA3FF1} = {0ADCE11D-A108-4DBD-811D-68171AF47B76}
 	EndGlobalSection
 EndGlobal
