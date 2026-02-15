@@ -4,5 +4,5 @@ namespace ChatOps.Api.LocalAdapters.Users;
 
 internal interface IUpsertTelegramUser
 {
-    void Upsert(TelegramUser user);
+    void Execute(TelegramUser user);
 }

@@ -1,6 +1,8 @@
-﻿namespace ChatOps.Api.Integrations.Telegram.Core;
+﻿using ChatOps.App.Core;
 
-internal sealed class TelegramCommand
+namespace ChatOps.Api.Integrations.Telegram.Core;
+
+internal sealed class TelegramCommand : ValueObject
 {
     private const char _separator = ' ';
     private readonly string _stringRepresentation;
@@ -8,7 +10,7 @@ internal sealed class TelegramCommand
     public TelegramUser User { get; }
     public IReadOnlyList<string> Tokens { get; }
 
-    private TelegramCommand(TelegramUser user, IEnumerable<string> tokens)
+    internal TelegramCommand(TelegramUser user, IEnumerable<string> tokens)
     {
         User = user;
         Tokens = [..tokens];
@@ -29,5 +31,10 @@ internal sealed class TelegramCommand
 
     public static TelegramCommand Empty(TelegramUser user) => new(user, []);
 
-    public override string ToString() => _stringRepresentation;
+    protected override IEnumerable<object?> GetEqualityComponents()
+    {
+        yield return _stringRepresentation;
+    }
+
+    protected override string GetStringRepresentation() => _stringRepresentation;
 }

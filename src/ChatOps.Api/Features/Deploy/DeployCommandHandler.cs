@@ -32,7 +32,7 @@ internal sealed class DeployCommandHandler : ITelegramCommandHandler, ICommandIn
         var holder = new HolderId(command.User.Id.ToString());
         var resourceId = new ResourceId(tokens[1]);
         var @ref = new Ref(tokens[2]);
-        var variables = GetVariables(command);
+        var variables = command.GetVariables();
         
         var deploy = await _deployUseCase.Execute(holder, resourceId, @ref, variables, ct);
         return await deploy.Match<Task<TgHandlerResult>>(
@@ -56,7 +56,8 @@ internal sealed class DeployCommandHandler : ITelegramCommandHandler, ICommandIn
             _ =>
             {
                 var txt = new TelegramText("⚠️ Сначала нужно зарезервивовать этот ресурс");
-                return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));            },
+                return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));            
+            },
             _ =>
             {
                 var txt = new TelegramText("⚠️ Ветка/тег не найдена");
@@ -82,25 +83,5 @@ internal sealed class DeployCommandHandler : ITelegramCommandHandler, ICommandIn
                                    """;
                 return Task.FromResult<TgHandlerResult>(new TelegramHandlerFailure(msg));
             });
-    }
-
-    private static IEnumerable<Variable> GetVariables(TelegramCommand command)
-    {
-        var arguments = command.Tokens.Skip(3).ToArray();
-        if (arguments.Length == 0)
-        {
-            yield break;
-        }
-
-        foreach (var arg in arguments)
-        {
-            var parts = arg.Split('=', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            if (parts.Length != 2)
-            {
-                continue;
-            }
-            
-            yield return new Variable(parts[0], parts[1]);
-        }
     }
 }

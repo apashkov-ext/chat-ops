@@ -4,7 +4,7 @@ namespace ChatOps.App.Core.Models;
 
 public sealed class VariableName : ValueObject
 {
-    private static readonly Regex _pattern = new ("^[a-z](?:[a-z_]*[a-z])$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex _pattern = new ("^[a-z](?:[a-z0-9_]*[a-z0-9])$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     
     public string Value { get; }
 
@@ -15,7 +15,7 @@ public sealed class VariableName : ValueObject
         var val = value.Trim();
         if (!_pattern.IsMatch(val))
         {
-            throw new ArgumentException($"Invalid argument name: {val}");
+            throw new ArgumentException($"Invalid variable name: {val}");
         }
         
         Value = val;
