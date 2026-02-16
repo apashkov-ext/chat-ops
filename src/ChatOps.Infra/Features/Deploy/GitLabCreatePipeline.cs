@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using ChatOps.App.Core.Models;
 using ChatOps.App.Features.Deploy;
+using ChatOps.Infra.Core;
 using ChatOps.Infra.Integrations.GitLab;
 using ChatOps.Infra.Integrations.GitLab.Http;
 using FluentValidation;
@@ -30,9 +31,8 @@ internal sealed class GitLabCreatePipeline : ICreatePipeline
         _logger = logger;
     }
     
-    public async Task<OneOf<CreatePipelineSuccess, CreatePipelineFailure>> Execute(
-        Resource resource, 
-        Ref @ref, 
+    public async Task<OneOf<CreatePipelineSuccess, CreatePipelineFailure>> Execute(Resource resource,
+        Ref @ref,
         IEnumerable<Variable> variables,
         CancellationToken ct = default)
     {
@@ -40,7 +40,10 @@ internal sealed class GitLabCreatePipeline : ICreatePipeline
 
         try
         {
-            response = await _pipelineApi.Create(_options.Project.Value, @ref.Value, ct);
+            response = await _pipelineApi.Create(
+                _options.Project.Value, 
+                @ref.Name.Value, 
+                ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -52,29 +55,38 @@ internal sealed class GitLabCreatePipeline : ICreatePipeline
             return new CreatePipelineFailure(CreatePipelineFailureReason.Transient);
         }
 
-        if (response.IsSuccessStatusCode)
+        if (!response.IsSuccessStatusCode)
         {
-            if (response.Content is not null)
-            {
-                var dto = response.Content;
-                var pipeline = new Pipeline(dto.Id, dto.WebUrl);
-                return new CreatePipelineSuccess(pipeline);
-            }
-            
-            _logger.LogWarning("GitLap API returned success status code {StatusCode} but empty content", response.StatusCode);
-            return  new CreatePipelineFailure(CreatePipelineFailureReason.Unknown);
-        }
-        
-        var message = response.Error?.Content ?? response.Error?.Message ?? $"HTTP status code {(int)response.StatusCode}";
-        _logger.LogWarning("GitLab API error: {Message}", message);
+            var message = response.Error?.Content ??
+                          response.Error?.Message ?? $"HTTP status code {(int)response.StatusCode}";
+            _logger.LogWarning("GitLab API error: {Message}", message);
 
-        var reason = MapFailureReason(response.StatusCode);
-        return new CreatePipelineFailure(reason);
+            var reason = MapFailureReason(response.StatusCode);
+            return new CreatePipelineFailure(reason);
+        }
+
+        if (response.Content is not null)
+        {
+            var dto = response.Content;
+                
+            var validation = await _validator.ValidateAsync(dto, ct);
+            if (!validation.IsValid)
+            {
+                var loggable = validation.AsLoggable();
+                _logger.LogWarning("GitLab API returned invalid DTO: {@ValidationResult}", loggable);
+                return  new CreatePipelineFailure(CreatePipelineFailureReason.Unknown);
+            }
+                
+            var pipeline = new Pipeline(dto.Id, dto.WebUrl);
+            return new CreatePipelineSuccess(pipeline);
+        }
+            
+        _logger.LogWarning("GitLap API returned success status code {StatusCode} but empty content", response.StatusCode);
+        return  new CreatePipelineFailure(CreatePipelineFailureReason.Unknown);
     }
 
     private static bool IsTransientFailure(Exception ex) 
         => ex is HttpRequestException or TaskCanceledException;
-    
     
     private static CreatePipelineFailureReason MapFailureReason(HttpStatusCode code)
     {
@@ -87,6 +99,7 @@ internal sealed class GitLabCreatePipeline : ICreatePipeline
             case HttpStatusCode.BadRequest 
                 or HttpStatusCode.Unauthorized 
                 or HttpStatusCode.Forbidden
+                or HttpStatusCode.NotFound
                 or HttpStatusCode.Conflict 
                 or HttpStatusCode.UnprocessableEntity:
                 return CreatePipelineFailureReason.Permanent;

@@ -3,23 +3,12 @@
 /// <summary>
 /// Ветка или тег.
 /// </summary>
-public sealed class Ref : ValueObject
+public sealed class Ref
 {
-    public string Value { get; }
+    public RefName Name { get; }
 
-    public Ref(string value)
+    public Ref(RefName name)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(value);
-        Value = value;
-    }
-    
-    protected override IEnumerable<object?> GetEqualityComponents()
-    {
-        yield return Value;
-    }
-
-    protected override string GetStringRepresentation()
-    {
-        return Value;
+        Name = name;
     }
 }

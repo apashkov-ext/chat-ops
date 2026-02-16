@@ -7,6 +7,11 @@ using CreatePipelineResult = OneOf.OneOf<
     ChatOps.App.Features.Deploy.CreatePipelineSuccess,
     ChatOps.App.Features.Deploy.CreatePipelineFailure
 >;
+using FindRefResult = OneOf.OneOf<
+    ChatOps.App.Features.Deploy.FindRefSuccess,
+    ChatOps.App.Features.Deploy.FindRefNotFound,
+    ChatOps.App.Features.Deploy.FindRefFailure
+>;
 
 namespace ChatOps.App.Tests;
 
@@ -41,9 +46,9 @@ public class DeployUseCaseTests
     {
         var holderId = new HolderId("888");
         var resourceId = new ResourceId("id");
-        var @ref = new Ref("master");
+        var refName = new RefName("master");
         
-        var result = await _useCase.Execute(holderId, resourceId, @ref, []);
+        var result = await _useCase.Execute(holderId, resourceId, refName, []);
         
         Assert.True(result.TryPickT1(out _, out _));
     }
@@ -53,11 +58,11 @@ public class DeployUseCaseTests
     {
         var holderId = new HolderId("888");
         var resourceId = new ResourceId("id");
-        var @ref = new Ref("master");
+        var refName = new RefName("master");
         _findResourceById.Setup(x => x.Execute(It.IsAny<ResourceId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Resource(resourceId, ResourceState.Reserved, new HolderId("999")));
         
-        var result = await _useCase.Execute(holderId, resourceId, @ref, []);
+        var result = await _useCase.Execute(holderId, resourceId, refName, []);
         
         Assert.True(result.TryPickT2(out _, out _));
     }  
@@ -67,11 +72,11 @@ public class DeployUseCaseTests
     {
         var holderId = new HolderId("888");
         var resourceId = new ResourceId("id");
-        var @ref = new Ref("master");
+        var refName = new RefName("master");
         _findResourceById.Setup(x => x.Execute(It.IsAny<ResourceId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Resource(resourceId, ResourceState.Free, null));
         
-        var result = await _useCase.Execute(holderId, resourceId, @ref, []);
+        var result = await _useCase.Execute(holderId, resourceId, refName, []);
         
         Assert.True(result.TryPickT2(out _, out _));
     }  
@@ -81,12 +86,14 @@ public class DeployUseCaseTests
     {
         var holderId = new HolderId("888");
         var resourceId = new ResourceId("id");
-        var @ref = new Ref("master");
+        var refName = new RefName("master");
         var resource = new Resource(resourceId, ResourceState.Reserved, new HolderId("888"));
         _findResourceById.Setup(x => x.Execute(It.IsAny<ResourceId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(resource);
+        _findRef.Setup(x => x.Execute(It.IsAny<RefName>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FindRefNotFound());
         
-        var result = await _useCase.Execute(holderId, resourceId, @ref, []);
+        var result = await _useCase.Execute(holderId, resourceId, refName, []);
         
         Assert.True(result.TryPickT3(out _, out _));
     }     
@@ -96,18 +103,18 @@ public class DeployUseCaseTests
     {
         var holderId = new HolderId("888");
         var resourceId = new ResourceId("id");
-        var @ref = new Ref("branch");
+        var refName = new RefName("branch");
         var resource = new Resource(resourceId, ResourceState.Reserved, new HolderId("888"));
         _findResourceById.Setup(x => x.Execute(It.IsAny<ResourceId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(resource);
-        _findRef.Setup(x => x.Execute(It.IsAny<Ref>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Ref("branch"));
+        _findRef.Setup(x => x.Execute(It.IsAny<RefName>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FindRefSuccess(new Ref("branch")));
         
-        await _useCase.Execute(holderId, resourceId, @ref, []);
+        await _useCase.Execute(holderId, resourceId, refName, []);
         
         _createPipeline.Verify(x => x.Execute(
             It.Is<Resource>(r => r.Id == new ResourceId("id")), 
-            It.Is<Ref>(r => r == new Ref("branch")), 
+            It.Is<Ref>(r => r.Name == new RefName("branch")), 
             It.IsAny<IEnumerable<Variable>>(),
             It.IsAny<CancellationToken>()), Times.Once);
     }  
@@ -117,13 +124,14 @@ public class DeployUseCaseTests
     {
         var holderId = new HolderId("888");
         var resourceId = new ResourceId("id");
-        var @ref = new Ref("branch");
+        var refName = new RefName("branch");
         var resource = new Resource(resourceId, ResourceState.Reserved, new HolderId("888"));
         _findResourceById.Setup(x => x.Execute(It.IsAny<ResourceId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(resource);
-        _findRef.SetupWithAny<IFindRef, Task<Ref>>(nameof(IFindRef.Execute)).ReturnsAsync(new Ref("branch"));
+        _findRef.SetupWithAny<IFindRef, Task<FindRefResult>>(nameof(IFindRef.Execute))
+            .ReturnsAsync(new FindRefSuccess(new Ref("branch")));
         
-        var result = await _useCase.Execute(holderId, resourceId, @ref, []);
+        var result = await _useCase.Execute(holderId, resourceId, refName, []);
         
         Assert.True(result.TryPickT0(out var success, out _));
         Assert.Equal(new Pipeline(123, "https://link"), success.Pipeline);
@@ -134,15 +142,15 @@ public class DeployUseCaseTests
     {
         var holderId = new HolderId("888");
         var resourceId = new ResourceId("id");
-        var @ref = new Ref("branch");
+        var refName = new RefName("branch");
         var resource = new Resource(resourceId, ResourceState.Reserved, new HolderId("888"));
         _findResourceById.Setup(x => x.Execute(It.IsAny<ResourceId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(resource);
-        _findRef.SetupWithAny<IFindRef, Task<Ref>>(nameof(IFindRef.Execute)).ReturnsAsync(new Ref("branch"));
+        _findRef.SetupWithAny<IFindRef, Task<FindRefResult>>(nameof(IFindRef.Execute)).ReturnsAsync(new FindRefSuccess(new Ref("branch")));
         _createPipeline.SetupWithAny<ICreatePipeline, Task<CreatePipelineResult>>(nameof(ICreatePipeline.Execute))
             .ReturnsAsync(new CreatePipelineFailure(CreatePipelineFailureReason.Unknown));
         
-        var result = await _useCase.Execute(holderId, resourceId, @ref, []);
+        var result = await _useCase.Execute(holderId, resourceId, refName, []);
         
         Assert.True(result.TryPickT5(out _, out _));
     }  

@@ -22,7 +22,8 @@ public static class Module
             includeInternalTypes: true);
         
         services.AddGitLabRefit<IPipelineApi>();
-        services.AddGitLabRefit<IRefApi>();
+        services.AddGitLabRefit<IBranchesApi>();
+        services.AddGitLabRefit<ITagsApi>();
     }    
     
     private static void AddGitLabRefit<T>(this IServiceCollection services) where T : class

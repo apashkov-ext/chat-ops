@@ -24,7 +24,7 @@ public class DeployCommandHandlerTests
         _deployUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
                 It.IsAny<ResourceId>(), 
-                It.IsAny<Ref>(), 
+                It.IsAny<RefName>(), 
                 It.IsAny<IEnumerable<Variable>>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new DeploySuccess(new Pipeline(123, "https://link")));
@@ -75,7 +75,7 @@ public class DeployCommandHandlerTests
         _deployUseCase.Verify(x => x.Execute(
             It.IsAny<HolderId>(),
             It.IsAny<ResourceId>(),
-            It.IsAny<Ref>(),
+            It.IsAny<RefName>(),
             It.IsAny<IEnumerable<Variable>>(),
             It.IsAny<CancellationToken>()), Times.Never);
     }
@@ -99,7 +99,7 @@ public class DeployCommandHandlerTests
         _deployUseCase.Verify(x => x.Execute(
             It.Is<HolderId>(h => h.Value == _user.Id.ToString()),
             It.Is<ResourceId>(r => r == new ResourceId("resourceName")),
-            It.Is<Ref>(r => r == new Ref("branchName")),
+            It.Is<RefName>(r => r == new RefName("branchName")),
             It.IsAny<IEnumerable<Variable>>(),
             It.IsAny<CancellationToken>()), Times.Once);
     }    
@@ -110,7 +110,7 @@ public class DeployCommandHandlerTests
         _deployUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
                 It.IsAny<ResourceId>(), 
-                It.IsAny<Ref>(),
+                It.IsAny<RefName>(),
                 It.IsAny<IEnumerable<Variable>>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new DeploySuccess(new Pipeline(123, "https://link")));
@@ -134,7 +134,7 @@ public class DeployCommandHandlerTests
         _deployUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
                 It.IsAny<ResourceId>(), 
-                It.IsAny<Ref>(),
+                It.IsAny<RefName>(),
                 It.IsAny<IEnumerable<Variable>>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new DeployResourceNotFound());
@@ -152,7 +152,7 @@ public class DeployCommandHandlerTests
         _deployUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
                 It.IsAny<ResourceId>(), 
-                It.IsAny<Ref>(),
+                It.IsAny<RefName>(),
                 It.IsAny<IEnumerable<Variable>>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new DeployResourceNotReserved());
@@ -161,7 +161,7 @@ public class DeployCommandHandlerTests
         var result = await _handler.Handle(cmd);
         
         Assert.True(result.TryPickT0(out var reply, out _));
-        Assert.Equal("⚠️ Сначала нужно зарезервивовать этот ресурс", reply.Text?.Text);
+        Assert.Equal("⚠️ Сначала нужно зарезервировать этот ресурс", reply.Text?.Text);
     } 
     
     [Fact]
@@ -170,7 +170,7 @@ public class DeployCommandHandlerTests
         _deployUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
                 It.IsAny<ResourceId>(), 
-                It.IsAny<Ref>(),
+                It.IsAny<RefName>(),
                 It.IsAny<IEnumerable<Variable>>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new DeployRefNotFound());
@@ -188,7 +188,7 @@ public class DeployCommandHandlerTests
         _deployUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
                 It.IsAny<ResourceId>(), 
-                It.IsAny<Ref>(),
+                It.IsAny<RefName>(),
                 It.IsAny<IEnumerable<Variable>>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new DeployInProcess(new Pipeline(123, "https://link")));
@@ -212,10 +212,10 @@ public class DeployCommandHandlerTests
         _deployUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
                 It.IsAny<ResourceId>(), 
-                It.IsAny<Ref>(),
+                It.IsAny<RefName>(),
                 It.IsAny<IEnumerable<Variable>>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new DeployFailure());
+            .ReturnsAsync(new DeployFailure(DeployFailureReason.Unknown));
         
         const string msg = """
                            Не получилось запустить пайплайн.  

@@ -1,35 +1,40 @@
 using ChatOps.App.Core.Models;
 using ChatOps.App.Features.Deploy;
 using ChatOps.Infra.Integrations.GitLab;
-using ChatOps.Infra.Integrations.GitLab.Http;
-using FluentValidation;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+
+using FindRefResult = OneOf.OneOf<
+    ChatOps.App.Features.Deploy.FindRefSuccess,
+    ChatOps.App.Features.Deploy.FindRefNotFound,
+    ChatOps.App.Features.Deploy.FindRefFailure
+>;
 
 namespace ChatOps.Infra.Features.Deploy;
 
 internal sealed class GitLabFindRef : IFindRef
 {
     private readonly GitLabOptions _options;
-    private readonly IRefApi _refApi;
-    // TODO
-    private readonly IValidator<RefDto> _validator;
-    private readonly ILogger<GitLabFindRef> _logger;
+    private readonly IFindBranchByName _findBranchByName;
+    private readonly IFindTagByName _findTagByName;
 
     public GitLabFindRef(
         IOptions<GitLabOptions> gitLabOptions,
-        IRefApi pipelineApi,
-        IValidator<RefDto> validator,
-        ILogger<GitLabFindRef> logger)
+        IFindBranchByName findBranchByName,
+        IFindTagByName findTagByName)
     {
         _options = gitLabOptions.Value;
-        _refApi = pipelineApi;
-        _validator = validator;
-        _logger = logger;
+        _findBranchByName = findBranchByName;
+        _findTagByName = findTagByName;
     }
     
-    public Task<Ref?> Execute(Ref @ref, CancellationToken ct = default)
+    public async Task<FindRefResult> Execute(
+        RefName refName,
+        CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        var findBranch = await _findBranchByName.Execute(refName, ct);
+        return await findBranch.Match<Task<FindRefResult>>(
+            success => Task.FromResult<FindRefResult>(success),
+            _ => _findTagByName.Execute(refName, ct),
+            failure => Task.FromResult<FindRefResult>(failure));
     }
 }

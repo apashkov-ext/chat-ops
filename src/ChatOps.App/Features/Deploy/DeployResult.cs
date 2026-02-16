@@ -15,4 +15,17 @@ public sealed record DeployResourceNotFound;
 public sealed record DeployResourceNotReserved;
 public sealed record DeployRefNotFound;
 public sealed record DeployInProcess(Pipeline Pipeline);
-public sealed record DeployFailure;
+public sealed record DeployFailure(DeployFailureReason Reason);
+
+public enum DeployFailureReason
+{
+    Unknown,
+    /// <summary>
+    /// Проблемы с интеграцией
+    /// </summary>
+    IncorrectIntegration,
+    /// <summary>
+    /// Временная ошибка
+    /// </summary>
+    PleaseTryAgain
+}

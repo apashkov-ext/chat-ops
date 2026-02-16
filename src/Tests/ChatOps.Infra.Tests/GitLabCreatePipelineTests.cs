@@ -20,10 +20,10 @@ public class GitLabCreatePipelineTests
         
         _pipeline = mocker.CreateInstance<GitLabCreatePipeline>();
     }
-    
+
     [Fact]
-    public void Test1()
+    public async Task ProjectNotFound_ShouldReturnPermanentError()
     {
-        
+        throw new NotImplementedException();
     }
 }

@@ -31,10 +31,10 @@ internal sealed class DeployCommandHandler : ITelegramCommandHandler, ICommandIn
         
         var holder = new HolderId(command.User.Id.ToString());
         var resourceId = new ResourceId(tokens[1]);
-        var @ref = new Ref(tokens[2]);
+        var refName = new RefName(tokens[2]);
         var variables = command.GetVariables();
         
-        var deploy = await _deployUseCase.Execute(holder, resourceId, @ref, variables, ct);
+        var deploy = await _deployUseCase.Execute(holder, resourceId, refName, variables, ct);
         return await deploy.Match<Task<TgHandlerResult>>(
             success =>
             {
@@ -43,7 +43,7 @@ internal sealed class DeployCommandHandler : ITelegramCommandHandler, ICommandIn
                 var msg = $"""
                            ✅ Пайплайн {link} запущен.  
                            ресурс: {resourceId}
-                           ветка/тег: {@ref}
+                           ветка/тег: {refName}
                            """;
                 var txt = new TelegramText(msg);
                 return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));
@@ -55,7 +55,7 @@ internal sealed class DeployCommandHandler : ITelegramCommandHandler, ICommandIn
             },
             _ =>
             {
-                var txt = new TelegramText("⚠️ Сначала нужно зарезервивовать этот ресурс");
+                var txt = new TelegramText("⚠️ Сначала нужно зарезервировать этот ресурс");
                 return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));            
             },
             _ =>
@@ -70,7 +70,7 @@ internal sealed class DeployCommandHandler : ITelegramCommandHandler, ICommandIn
                 var msg = $"""
                            ℹ️ Пайплайн {link} уже запущен и выполняется.  
                            ресурс: {resourceId}
-                           ветка/тег: {@ref}
+                           ветка/тег: {refName}
                            """;
                 var txt = new TelegramText(msg);
                 return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));

@@ -6,8 +6,8 @@ namespace ChatOps.App.Features.Deploy;
 public interface IDeployUseCase
 {
     Task<DeployResult> Execute(HolderId holderId,
-        ResourceId resourceId, 
-        Ref @ref, 
+        ResourceId resourceId,
+        RefName @ref,
         IEnumerable<Variable> variables,
         CancellationToken ct = default);
 }
@@ -30,7 +30,7 @@ internal sealed class DeployUseCase : IDeployUseCase
     
     public async Task<DeployResult> Execute(HolderId holderId,
         ResourceId resourceId, 
-        Ref @ref, 
+        RefName refName, 
         IEnumerable<Variable> variables,
         CancellationToken ct = default)
     {
@@ -45,12 +45,28 @@ internal sealed class DeployUseCase : IDeployUseCase
             return new DeployResourceNotReserved();
         }
         
-        var r = await _findRef.Execute(@ref, ct);
-        if (r is null)
-        {
-            return new DeployRefNotFound();
-        }
-        
+        var findRef = await _findRef.Execute(refName, ct);
+        return await findRef.Match<Task<DeployResult>>(
+            async success => await CreatePipeline(resource, success.Ref, variables, ct),
+            _ =>
+            {
+                var nf = new DeployRefNotFound();
+                return Task.FromResult<DeployResult>(nf);
+            },
+            failure =>
+            {
+                var reason = MapReason(failure.Reason);
+                return Task.FromResult<DeployResult>(new DeployFailure(reason));
+            }
+        );
+    }
+
+    private async Task<DeployResult> CreatePipeline(
+        Resource resource,
+        Ref @ref,
+        IEnumerable<Variable> variables,
+        CancellationToken ct)
+    {
         var createPipeline = await _createPipeline.Execute(resource, @ref, variables, ct);
         return await createPipeline.Match<Task<DeployResult>>(
             success =>
@@ -58,12 +74,40 @@ internal sealed class DeployUseCase : IDeployUseCase
                 var res = new DeploySuccess(success.Pipeline);
                 return Task.FromResult<DeployResult>(res);
             },
-            _ =>
+            failure =>
             {
-                var res = new DeployFailure();
-                return Task.FromResult<DeployResult>(res);
+                var reason = MapReason(failure.Reason);
+                return Task.FromResult<DeployResult>(new DeployFailure(reason));
             }
         );
+    }
+
+    private static DeployFailureReason MapReason(FindRefFailureReason reason)
+    {
+        switch (reason)
+        {
+            case FindRefFailureReason.Permanent:
+                return DeployFailureReason.IncorrectIntegration;
+            case FindRefFailureReason.Transient:
+                return DeployFailureReason.PleaseTryAgain;
+            case FindRefFailureReason.Unknown:
+            default:
+                return DeployFailureReason.Unknown;
+        }
+    }    
+    
+    private static DeployFailureReason MapReason(CreatePipelineFailureReason reason)
+    {
+        switch (reason)
+        {
+            case CreatePipelineFailureReason.Permanent:
+                return DeployFailureReason.IncorrectIntegration;
+            case CreatePipelineFailureReason.Transient:
+                return DeployFailureReason.PleaseTryAgain;
+            case CreatePipelineFailureReason.Unknown:
+            default:
+                return DeployFailureReason.Unknown;
+        }
     }
 
     private static bool ResourceReservedByCurrentUser(Resource resource, HolderId currentHolder)

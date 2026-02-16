@@ -1,15 +1,11 @@
-﻿global using CreatePipelineResult = OneOf.OneOf<
-    ChatOps.App.Features.Deploy.CreatePipelineSuccess,
-    ChatOps.App.Features.Deploy.CreatePipelineFailure
->;
-
-using ChatOps.App.Core.Models;
+﻿using ChatOps.App.Core.Models;
+using OneOf;
 
 namespace ChatOps.App.Features.Deploy;
 
 public interface ICreatePipeline
 {
-    Task<CreatePipelineResult> Execute(
+    Task<OneOf<CreatePipelineSuccess, CreatePipelineFailure>> Execute(
         Resource resource, 
         Ref @ref, 
         IEnumerable<Variable> variables,
