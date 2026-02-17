@@ -13,7 +13,7 @@ public class HelpCommandHandlerTests
     public HelpCommandHandlerTests()
     {
         _mocker = new AutoMocker();
-        _infos = new List<ICommandInfo>();
+        _infos = [];
         _mocker.Use<IEnumerable<ICommandInfo>>(_infos);
     }
     

@@ -16,7 +16,7 @@ internal sealed class UsersStorage : IFindTelegramUserById, IUpsertTelegramUser
         return _users.Find(x => x.Id == id);
     }
     
-    public void Upsert(TelegramUser user)
+    public void Execute(TelegramUser user)
     {
         var index = _users.FindIndex(x => x.Id == user.Id);
         if (index != -1)

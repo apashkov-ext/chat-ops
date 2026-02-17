@@ -6,27 +6,32 @@ namespace ChatOps.App.Features.Deploy;
 public interface IDeployUseCase
 {
     Task<DeployResult> Execute(HolderId holderId,
-        ResourceId resourceId, 
-        Branch branch, 
+        ResourceId resourceId,
+        RefName @ref,
+        IEnumerable<Variable> variables,
         CancellationToken ct = default);
 }
 
 internal sealed class DeployUseCase : IDeployUseCase
 {
     private readonly IFindResourceById _findResourceById;
-    private readonly IFindBranch _findBranch;
+    private readonly IFindRef _findRef;
+    private readonly ICreatePipeline _createPipeline;
 
     public DeployUseCase(
         IFindResourceById findResourceById,
-        IFindBranch findBranch)
+        IFindRef findRef,
+        ICreatePipeline createPipeline)
     {
         _findResourceById = findResourceById;
-        _findBranch = findBranch;
+        _findRef = findRef;
+        _createPipeline = createPipeline;
     }
     
     public async Task<DeployResult> Execute(HolderId holderId,
         ResourceId resourceId, 
-        Branch branch, 
+        RefName refName, 
+        IEnumerable<Variable> variables,
         CancellationToken ct = default)
     {
         var resource = await _findResourceById.Execute(resourceId, ct);
@@ -35,26 +40,78 @@ internal sealed class DeployUseCase : IDeployUseCase
             return new DeployResourceNotFound();
         }
 
-        if (ResourceReservedByAnotherUser(resource, holderId))
+        if (!ResourceReservedByCurrentUser(resource, holderId))
         {
-            return new DeployResourceInUse(holderId);
+            return new DeployResourceNotReserved();
         }
         
-        // проверить, существует ли ветка
-        
-        // проверить, запущен ли уже пайплайн с такими же параметрами (если это возможно). Если запущен - что тогда? Варианты:
-        // - остановить его и запустить новый
-        // - запустить новый, не останавливая старый (поставить в очередь).
-        // - сообщить юзеру и ничего не делать.
-        // TODO: сколько максимум pipeline можно запускать на одном ресурсе?
-
-        throw new NotImplementedException();
+        var findRef = await _findRef.Execute(refName, ct);
+        return await findRef.Match<Task<DeployResult>>(
+            async success => await CreatePipeline(resource, success.Ref, variables, ct),
+            _ =>
+            {
+                var nf = new DeployRefNotFound();
+                return Task.FromResult<DeployResult>(nf);
+            },
+            failure =>
+            {
+                var reason = MapReason(failure.Reason);
+                return Task.FromResult<DeployResult>(new DeployFailure(reason));
+            }
+        );
     }
-    
-    private static bool ResourceReservedByAnotherUser(Resource resource, HolderId currentHolder)
+
+    private async Task<DeployResult> CreatePipeline(
+        Resource resource,
+        Ref @ref,
+        IEnumerable<Variable> variables,
+        CancellationToken ct)
     {
-        return 
-            resource.State == ResourceState.Reserved 
-            && resource.Holder != null && resource.Holder != currentHolder;
+        var createPipeline = await _createPipeline.Execute(resource, @ref, variables, ct);
+        return await createPipeline.Match<Task<DeployResult>>(
+            success =>
+            {
+                var res = new DeploySuccess(success.Pipeline);
+                return Task.FromResult<DeployResult>(res);
+            },
+            failure =>
+            {
+                var reason = MapReason(failure.Reason);
+                return Task.FromResult<DeployResult>(new DeployFailure(reason));
+            }
+        );
+    }
+
+    private static DeployFailureReason MapReason(FindRefFailureReason reason)
+    {
+        switch (reason)
+        {
+            case FindRefFailureReason.Permanent:
+                return DeployFailureReason.IncorrectIntegration;
+            case FindRefFailureReason.Transient:
+                return DeployFailureReason.PleaseTryAgain;
+            case FindRefFailureReason.Unknown:
+            default:
+                return DeployFailureReason.Unknown;
+        }
+    }    
+    
+    private static DeployFailureReason MapReason(CreatePipelineFailureReason reason)
+    {
+        switch (reason)
+        {
+            case CreatePipelineFailureReason.Permanent:
+                return DeployFailureReason.IncorrectIntegration;
+            case CreatePipelineFailureReason.Transient:
+                return DeployFailureReason.PleaseTryAgain;
+            case CreatePipelineFailureReason.Unknown:
+            default:
+                return DeployFailureReason.Unknown;
+        }
+    }
+
+    private static bool ResourceReservedByCurrentUser(Resource resource, HolderId currentHolder)
+    {
+        return resource.State == ResourceState.Reserved && resource.Holder == currentHolder;
     }
 }

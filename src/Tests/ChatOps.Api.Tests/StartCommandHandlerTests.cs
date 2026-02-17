@@ -15,7 +15,7 @@ public class StartCommandHandlerTests
         var mocker = new AutoMocker();
 
         var ver = new Mock<IApplicationVersionResolver>();
-        ver.Setup(x => x.GetVersion()).Returns("v1.0.0");
+        ver.Setup(x => x.GetVersion()).Returns("1.0.0");
         mocker.Use(ver);
         
         _handler = mocker.CreateInstance<StartCommandHandler>();
@@ -30,7 +30,7 @@ public class StartCommandHandlerTests
                                         Давай накатывать вместе!
 
                                         Чтобы узнать, что я умею, напиши <code>{Constants.CommandPrefix} help</code>
-                                        <code>v1.0.0</code>
+                                        v.<code>1.0.0</code>
                                         """;        
         var result = await _handler.Handle(TelegramCommand.Empty(new TelegramUser(888, "user")));
         

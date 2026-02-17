@@ -24,9 +24,10 @@ public class DeployCommandHandlerTests
         _deployUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
                 It.IsAny<ResourceId>(), 
-                It.IsAny<Branch>(), 
+                It.IsAny<RefName>(), 
+                It.IsAny<IEnumerable<Variable>>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new DeploySuccess());
+            .ReturnsAsync(new DeploySuccess(new Pipeline(123, "https://link")));
         mocker.Use(_deployUseCase);
 
         var findTgUser = new Mock<IFindTelegramUserById>();
@@ -74,7 +75,8 @@ public class DeployCommandHandlerTests
         _deployUseCase.Verify(x => x.Execute(
             It.IsAny<HolderId>(),
             It.IsAny<ResourceId>(),
-            It.IsAny<Branch>(),
+            It.IsAny<RefName>(),
+            It.IsAny<IEnumerable<Variable>>(),
             It.IsAny<CancellationToken>()), Times.Never);
     }
     
@@ -97,25 +99,133 @@ public class DeployCommandHandlerTests
         _deployUseCase.Verify(x => x.Execute(
             It.Is<HolderId>(h => h.Value == _user.Id.ToString()),
             It.Is<ResourceId>(r => r == new ResourceId("resourceName")),
-            It.Is<Branch>(r => r == new Branch("branchName")),
+            It.Is<RefName>(r => r == new RefName("branchName")),
+            It.IsAny<IEnumerable<Variable>>(),
             It.IsAny<CancellationToken>()), Times.Once);
     }    
     
     [Fact]
-    public async Task Handle_SuccessShouldBeMappedToReply()
+    public async Task Handle_Success_ShouldBeMappedToReply()
     {
         _deployUseCase.Setup(x => x.Execute(
                 It.IsAny<HolderId>(), 
                 It.IsAny<ResourceId>(), 
-                It.IsAny<Branch>(),
+                It.IsAny<RefName>(),
+                It.IsAny<IEnumerable<Variable>>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new DeploySuccess());
+            .ReturnsAsync(new DeploySuccess(new Pipeline(123, "https://link")));
+        
+        const string msg = """
+                           ✅ Пайплайн <a href="https://link">#123</a> запущен.  
+                           ресурс: resourceName
+                           ветка/тег: branchName
+                           """;
         
         var cmd = TelegramCommand.Parse(_user, "deploy resourceName branchName");
         var result = await _handler.Handle(cmd);
         
         Assert.True(result.TryPickT0(out var reply, out _));
-        Assert.Equal("✅ Ветка 'resName' установлена на ресурс 'resourceName'", reply.Text?.Text);
+        Assert.Equal(msg, reply.Text?.Text);
     }    
     
+    [Fact]
+    public async Task Handle_ResourceNotFound_ShouldBeMappedToReply()
+    {
+        _deployUseCase.Setup(x => x.Execute(
+                It.IsAny<HolderId>(), 
+                It.IsAny<ResourceId>(), 
+                It.IsAny<RefName>(),
+                It.IsAny<IEnumerable<Variable>>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DeployResourceNotFound());
+        
+        var cmd = TelegramCommand.Parse(_user, "deploy resourceName branchName");
+        var result = await _handler.Handle(cmd);
+        
+        Assert.True(result.TryPickT0(out var reply, out _));
+        Assert.Equal("⚠️ Ресурс не найден", reply.Text?.Text);
+    } 
+    
+    [Fact]
+    public async Task Handle_ResourceNotReserved_ShouldBeMappedToReply()
+    {
+        _deployUseCase.Setup(x => x.Execute(
+                It.IsAny<HolderId>(), 
+                It.IsAny<ResourceId>(), 
+                It.IsAny<RefName>(),
+                It.IsAny<IEnumerable<Variable>>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DeployResourceNotReserved());
+        
+        var cmd = TelegramCommand.Parse(_user, "deploy resourceName branchName");
+        var result = await _handler.Handle(cmd);
+        
+        Assert.True(result.TryPickT0(out var reply, out _));
+        Assert.Equal("⚠️ Сначала нужно зарезервировать этот ресурс", reply.Text?.Text);
+    } 
+    
+    [Fact]
+    public async Task Handle_RefNotFound_ShouldBeMappedToReply()
+    {
+        _deployUseCase.Setup(x => x.Execute(
+                It.IsAny<HolderId>(), 
+                It.IsAny<ResourceId>(), 
+                It.IsAny<RefName>(),
+                It.IsAny<IEnumerable<Variable>>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DeployRefNotFound());
+        
+        var cmd = TelegramCommand.Parse(_user, "deploy resourceName branchName");
+        var result = await _handler.Handle(cmd);
+        
+        Assert.True(result.TryPickT0(out var reply, out _));
+        Assert.Equal("⚠️ Ветка/тег не найдена", reply.Text?.Text);
+    }     
+    
+    [Fact]
+    public async Task Handle_InProcess_ShouldBeMappedToReply()
+    {
+        _deployUseCase.Setup(x => x.Execute(
+                It.IsAny<HolderId>(), 
+                It.IsAny<ResourceId>(), 
+                It.IsAny<RefName>(),
+                It.IsAny<IEnumerable<Variable>>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DeployInProcess(new Pipeline(123, "https://link")));
+        
+        const string msg = """
+                            ℹ️ Пайплайн <a href="https://link">#123</a> уже запущен и выполняется.  
+                            ресурс: resourceName
+                            ветка/тег: branchName
+                            """;
+        
+        var cmd = TelegramCommand.Parse(_user, "deploy resourceName branchName");
+        var result = await _handler.Handle(cmd);
+        
+        Assert.True(result.TryPickT0(out var reply, out _));
+        Assert.Equal(msg, reply.Text?.Text);
+    }     
+    
+    [Fact]
+    public async Task Handle_Failure_ShouldBeMappedToFailure()
+    {
+        _deployUseCase.Setup(x => x.Execute(
+                It.IsAny<HolderId>(), 
+                It.IsAny<ResourceId>(), 
+                It.IsAny<RefName>(),
+                It.IsAny<IEnumerable<Variable>>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DeployFailure(DeployFailureReason.Unknown));
+        
+        const string msg = """
+                           Не получилось запустить пайплайн.  
+                           Пойдите и выясните причину.
+                           """;
+        
+        var cmd = TelegramCommand.Parse(_user, "deploy resourceName branchName");
+        var result = await _handler.Handle(cmd);
+        
+        Assert.True(result.TryPickT1(out var failure, out _));
+        Assert.Equal(msg, failure.Error);
+    } 
 }

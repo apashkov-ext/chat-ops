@@ -19,6 +19,7 @@ internal static class Module
         });
         
         builder.Services.AddTransient<IUpdateHandler, UpdateHandler>();
+        builder.Services.AddTransient<IUpdateHandlerGuard, UpdateHandlerGuard>();
         builder.Services.AddTransient<ITelegramChatApi, TelegramChatApi>();
         builder.Services.AddHostedService<TelegramPoller>();
     }

@@ -4,7 +4,7 @@ namespace ChatOps.Api.LocalAdapters.Files;
 
 internal interface IGetStreamByFileId
 {
-    Stream ResolveById(string imageId);
+    Stream Execute(string imageId);
 }
 
 internal sealed class GetStreamByFileId : IGetStreamByFileId
@@ -16,7 +16,7 @@ internal sealed class GetStreamByFileId : IGetStreamByFileId
         _options = imagesOptions.Value;
     }
     
-    public Stream ResolveById(string imageId)
+    public Stream Execute(string imageId)
     {
         var path = Path.Combine(_options.Directory, imageId);
         

@@ -6,6 +6,8 @@ internal sealed record TelegramUser(
     string? LastName = null,
     string? Username = null)
 {
+    public static TelegramUser Unknown { get; } = new (0, "Unknown");
+    
     public string GetMention()
     {
         var displayName = !string.IsNullOrWhiteSpace(Username) 

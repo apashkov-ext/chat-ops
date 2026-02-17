@@ -1,32 +1,32 @@
 using ChatOps.Api.Integrations.Telegram.Core;
 using ChatOps.Api.LocalAdapters.Files;
 using ChatOps.Api.LocalAdapters.Users;
-using Microsoft.Extensions.Options;
 using Telegram.Bot.Polling;
 
 namespace ChatOps.Api.Integrations.Telegram;
 
 internal sealed class UpdateHandler : IUpdateHandler
 {
-    private readonly long[] _allowedChatIds;
     private readonly ITelegramCommandHandler[] _handlers;
+    private readonly IUpdateHandlerGuard _guard;
     private readonly IUpsertTelegramUser _saveTelegramUser;
     private readonly ITelegramChatApi _chatApi;
-    private readonly IGetStreamByFileId _imageResolver;
+    private readonly IGetStreamByFileId _getStreamByFileId;
     private readonly ILogger<UpdateHandler> _logger;
 
-    public UpdateHandler(IEnumerable<ITelegramCommandHandler> handlers,
+    public UpdateHandler(
+        IUpdateHandlerGuard guard,
+        IEnumerable<ITelegramCommandHandler> handlers,
         IUpsertTelegramUser saveTelegramUser,
         ITelegramChatApi chatApi,
-        IOptions<TelegramConfig> config,
-        IGetStreamByFileId imageResolver,
+        IGetStreamByFileId getStreamByFileId,
         ILogger<UpdateHandler> logger)
     {
-        _allowedChatIds = config.Value.GetAllowedChatIds();
         _handlers = handlers.ToArray();
+        _guard = guard;
         _saveTelegramUser = saveTelegramUser;
         _chatApi = chatApi;
-        _imageResolver = imageResolver;
+        _getStreamByFileId = getStreamByFileId;
         _logger = logger;
     }
 
@@ -40,48 +40,39 @@ internal sealed class UpdateHandler : IUpdateHandler
             ["MessageType"] = update.Message?.Type,
             ["MessageText"] = update.Message?.Text
         });
-        
-        _logger.LogInformation("Handling update from chat {ChatId:}", update.Message?.Chat.Id);
 
-        if (!ChatIsAllowed(update))
+        _logger.LogInformation("Handling update from chat {ChatId:}", 
+            update.Message?.Chat.Id);
+
+        if (!_guard.CanHandle(update))
         {
-            _logger.LogInformation("Chat is not allowed, skipping");
+            _logger.LogDebug("Update cannot be handled, skipping");
             return;
         }
 
-        if (update.Type != UpdateType.Message)
-        {
-            _logger.LogDebug("Unsupported update type: {UpdateType}, skipping", update.Type);
-            return;
-        }
+        await Handle(update, ct);
+    }
 
+    public Task HandleErrorAsync(ITelegramBotClient botClient, 
+        Exception exception, 
+        HandleErrorSource source,
+        CancellationToken ct)
+    {
+        _logger.LogError(exception, "Error '{ErrorSource}' occured while handling telegram message", source);
+        return Task.CompletedTask;
+    }
+
+    private async Task Handle(Update update, CancellationToken ct)
+    {
         var message = update.Message;
-        if (message is null)
-        {
-            _logger.LogDebug("Message is null, skipping");
-            return;
-        }
-        
-        if (message.Type != MessageType.Text)
-        {
-            _logger.LogDebug("Unsupported message type: {MessageType}, skipping", message.Type);
-            return;
-        }
-        
-        if (message.From is null)
-        {
-            _logger.LogDebug("Message.From is null, skipping");
-            return;
-        }
-
-        if (!TryGetCommand(message, out var command))
+        if (message is null || !TelegramCommandFactory.TryCreate(message, out var command))
         {
             _logger.LogDebug("This is not a command, skipping");
             return;
         }
         
         // запомним юзера для рендера ответа.
-        _saveTelegramUser.Upsert(command.User);
+        _saveTelegramUser.Execute(command.User);
         
         if (command.Tokens.Count == 0)
         {
@@ -113,7 +104,7 @@ internal sealed class UpdateHandler : IUpdateHandler
 
                 if (reply.Image is not null)
                 {
-                    await using var imageStream = _imageResolver.ResolveById(reply.Image.ImageId);
+                    await using var imageStream = _getStreamByFileId.Execute(reply.Image.ImageId);
                     await _chatApi.SendImage(message.Chat.Id, imageStream, ct);
                 }
             },
@@ -134,42 +125,5 @@ internal sealed class UpdateHandler : IUpdateHandler
                     ct);
             }
         );
-    }
-
-    private bool ChatIsAllowed(Update update)
-    {
-        return _allowedChatIds.Any(x => x == update.Message?.Chat.Id);
-    }
-
-    private static bool TryGetCommand(Message message, out TelegramCommand command)
-    {
-        var text = message.Text ?? string.Empty;
-        var from = message.From!;
-        var user = new TelegramUser(from.Id, from.FirstName, from.LastName, from.Username);
-        
-        if (message.Chat.Type != ChatType.Private && !text.StartsWith($"{Constants.CommandPrefix}"))
-        {
-            command = TelegramCommand.Empty(user);
-            return false;
-        }
-        
-        // личная переписка с ботом, можно без официоза
-        text = Clean(text);
-        command = TelegramCommand.Parse(user, text);
-        return true;
-    }    
-    
-    private static string Clean(string text)
-    {
-        return text.Replace(Constants.CommandPrefix, string.Empty).Trim();
-    }
-
-    public Task HandleErrorAsync(ITelegramBotClient botClient, 
-        Exception exception, 
-        HandleErrorSource source,
-        CancellationToken ct)
-    {
-        _logger.LogError(exception, "Error '{ErrorSource}' occured while handling telegram message", source);
-        return Task.CompletedTask;
     }
 }

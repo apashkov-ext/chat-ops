@@ -53,7 +53,7 @@ internal sealed class TakeCommandHandler : ITelegramCommandHandler, ICommandInfo
             },
             limitExceeded =>
             {
-                var msg = "⚠️ Сначала нужно освободить занятые ресурсы";
+                const string msg = "⚠️ Сначала нужно освободить занятые ресурсы";
                 var txt = new TelegramText(msg);
                 return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));
             },            
@@ -66,7 +66,7 @@ internal sealed class TakeCommandHandler : ITelegramCommandHandler, ICommandInfo
             },            
             alreadyReserved =>
             {
-                var msg = "ℹ️ Ресурс уже занят вами";
+                const string msg = "ℹ️ Ресурс уже занят вами";
                 var txt = new TelegramText(msg);
                 return Task.FromResult<TgHandlerResult>(new TelegramReply(txt));
             },
